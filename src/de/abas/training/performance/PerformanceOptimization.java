@@ -26,6 +26,23 @@ public class PerformanceOptimization implements ContextRunnable {
 	}
 
 	/**
+	 * Displays information about the number of objects selected and the
+	 * duration of this selection.
+	 * 
+	 * @param dbContext
+	 * @param noObjects
+	 * @param noRows
+	 * @param start
+	 */
+	private void displayPerformanceInformation(final DbContext dbContext,
+			int noObjects, int noRows, long start) {
+		long sec = (System.currentTimeMillis() - start);
+		dbContext.out().println("time in ms: " + sec);
+		dbContext.out().println("number of objects: " + noObjects);
+		dbContext.out().println("number of rows:  " + noRows);
+	}
+
+	/**
 	 * Runs selection in server mode without optimization.
 	 * 
 	 * @param dbContext The database context.
@@ -54,27 +71,8 @@ public class PerformanceOptimization implements ContextRunnable {
 			noObjects++;
 		}
 
-		displayPerformanceInformation(dbContext, noObjects, noRows,
-				start);
+		displayPerformanceInformation(dbContext, noObjects, noRows, start);
 
-	}
-
-	/**
-	 * Displays information about the number of objects selected and the
-	 * duration of this selection.
-	 * 
-	 * @param dbContext
-	 * @param noObjects
-	 * @param noRows
-	 * @param start
-	 */
-	private void displayPerformanceInformation(final DbContext dbContext,
-			int noObjects, int noRows, long start) {
-		long sec = (System.currentTimeMillis() - start);
-		dbContext.out().println("time in ms: " + sec);
-		dbContext.out()
-				.println("number of objects: " + noObjects);
-		dbContext.out().println("number of rows:  " + noRows);
 	}
 
 }
