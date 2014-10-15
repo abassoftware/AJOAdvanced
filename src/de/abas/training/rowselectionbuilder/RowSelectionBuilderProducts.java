@@ -2,7 +2,7 @@ package de.abas.training.rowselectionbuilder;
 
 import de.abas.training.common.AbstractAjoAccess;
 
-public class RowSelectionBuilder extends AbstractAjoAccess {
+public class RowSelectionBuilderProducts extends AbstractAjoAccess {
 
 	@Override
 	public void run(String[] args) {
