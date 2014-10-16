@@ -66,5 +66,4 @@ public class RowSelectionBuilderProducts extends AbstractAjoAccess {
 				QueryUtil.getFirst(getDbContext(), selectionBuilder.build());
 		return product;
 	}
-
 }
