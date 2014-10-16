@@ -49,7 +49,6 @@ public class RowSelectionBuilderProducts extends AbstractAjoAccess {
 		else {
 			getDbContext().out().println("Query-Object: null");
 		}
-
 	}
 
 	/**
