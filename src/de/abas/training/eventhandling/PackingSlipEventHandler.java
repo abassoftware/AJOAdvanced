@@ -82,7 +82,6 @@ public class PackingSlipEventHandler {
 	 * @param ctx The database context.
 	 * @param dateFrom The packaging slip's creation date.
 	 * @param warrantyPer The warranty period to add to calculate the warranty
-	 * date.
 	 * @return The real warranty date.
 	 */
 	private AbasDate calculateWarrantyDateUtilities(DbContext ctx,
