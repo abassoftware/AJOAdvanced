@@ -21,6 +21,14 @@ import de.abas.erp.db.selection.SelectionBuilder;
 import de.abas.erp.db.util.QueryUtil;
 import de.abas.training.common.AbstractAjoAccess;
 
+/**
+ * This class reads from a XML file, extracts the products stored in it and
+ * creates new products accordingly. If a product with the same search word
+ * already exists the transaction is rolled back completely.
+ * 
+ * @author abas Software AG
+ *
+ */
 public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess {
 	private final String XML_FILE =
 			"java/projects/AJOAdvanced/files/products.xml";
