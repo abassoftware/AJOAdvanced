@@ -71,7 +71,7 @@ public abstract class AbstractAjoAccess implements ContextRunnable {
 	private FileWriter fileWriterLogging;
 
 	// Initialize DbContext
-	private DbContext dbContext = null;
+	private DbContext ctx = null;
 	private ContextMode mode = ContextMode.UNDEFINED;
 
 	// add default message listener.
@@ -106,13 +106,13 @@ public abstract class AbstractAjoAccess implements ContextRunnable {
 	// get DbContext
 	// creates a Client-Context if dbContext == null
 	public DbContext getDbContext() {
-		if (dbContext == null) {
-			dbContext =
+		if (ctx == null) {
+			ctx =
 					ContextHelper.createClientContext(hostname, port, mandant,
 							password, this.getClass().getSimpleName());
 			mode = ContextMode.CLIENT_MODE;
 		}
-		return dbContext;
+		return ctx;
 	}
 
 	// Connection parameter
@@ -154,7 +154,7 @@ public abstract class AbstractAjoAccess implements ContextRunnable {
 	@Override
 	public int runFop(FOPSessionContext fopSessionContext, String[] args)
 			throws FOPException {
-		dbContext = fopSessionContext.getDbContext();
+		ctx = fopSessionContext.getDbContext();
 		mode = ContextMode.SERVER_MODE;
 		// run-methode aufrufen. Argumente übergeben
 		run(args);
@@ -166,8 +166,8 @@ public abstract class AbstractAjoAccess implements ContextRunnable {
 	public void setHostname(String hostname) {
 		if (isClientContextRunning()) {
 			this.hostname = hostname;
-			dbContext.close();
-			dbContext = null;
+			ctx.close();
+			ctx = null;
 		}
 	}
 
@@ -176,8 +176,8 @@ public abstract class AbstractAjoAccess implements ContextRunnable {
 	public void setMandant(String mandant) {
 		if (isClientContextRunning()) {
 			this.mandant = mandant;
-			dbContext.close();
-			dbContext = null;
+			ctx.close();
+			ctx = null;
 		}
 	}
 
@@ -186,8 +186,8 @@ public abstract class AbstractAjoAccess implements ContextRunnable {
 	public void setPassword(String password) {
 		if (isClientContextRunning()) {
 			this.password = password;
-			dbContext.close();
-			dbContext = null;
+			ctx.close();
+			ctx = null;
 		}
 	}
 
@@ -196,8 +196,8 @@ public abstract class AbstractAjoAccess implements ContextRunnable {
 	public void setPort(int port) {
 		if (isClientContextRunning()) {
 			this.port = port;
-			dbContext.close();
-			dbContext = null;
+			ctx.close();
+			ctx = null;
 		}
 	}
 
@@ -225,7 +225,7 @@ public abstract class AbstractAjoAccess implements ContextRunnable {
 			return true;
 		}
 		else {
-			dbContext.out().println(
+			ctx.out().println(
 					"No Client-Mode running -> parameter may not be changed");
 			return false;
 		}
