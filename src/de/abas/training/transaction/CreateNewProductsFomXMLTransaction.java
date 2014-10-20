@@ -81,11 +81,9 @@ public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess {
 	 * accordingly.
 	 * 
 	 * @param record The current record element.
-	 * @return Returns value of rollBack indicating whether a roll back is
-	 * necessary.
 	 * @throws IOException Exception thrown if an error occurred.
 	 */
-	private boolean checksWhetherProductExists(Element record)
+	private void checksWhetherProductExists(Element record)
 			throws IOException {
 		List<Attribute> recordAttributes = record.getAttributes();
 		for (Attribute attribute : recordAttributes) {
@@ -103,7 +101,6 @@ public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess {
 				}
 			}
 		}
-		return rollBack;
 	}
 
 	/**
@@ -163,7 +160,7 @@ public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess {
 			throws IOException {
 		for (Element record : records) {
 			productEditor = ctx.newObject(ProductEditor.class);
-			rollBack = checksWhetherProductExists(record);
+			checksWhetherProductExists(record);
 			if (rollBack == true) {
 				productEditor.abort();
 				break;
