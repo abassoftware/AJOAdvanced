@@ -21,9 +21,11 @@ import de.abas.erp.db.selection.SelectionBuilder;
 import de.abas.erp.db.util.QueryUtil;
 import de.abas.training.common.AbstractAjoAccess;
 
-public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess{
-	private final String XML_FILE = "win/tmp/productListToRead.xml";
-	private final String LOG_FILE = "win/tmp/productListToRead.log";
+public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess {
+	private final String XML_FILE =
+			"java/projects/AJOAdvanced/files/products.xml";
+	private final String LOG_FILE =
+			"java/projects/AJOAdvanced/files/products_xml_import.log";
 
 	private BufferedWriter bufferedWriter = null;
 	private DbContext ctx = null;
@@ -78,29 +80,22 @@ public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess{
 	 * Checks whether product already exists and sets value of rollBack
 	 * accordingly.
 	 * 
-	 * @param dbContext The database context.
-	 * @param bufferedWriter The BufferedWriter instance.
-	 * @param rollBack Whether or not a roll back is necessary.
 	 * @param record The current record element.
 	 * @return Returns value of rollBack indicating whether a roll back is
 	 * necessary.
 	 * @throws IOException Exception thrown if an error occurred.
 	 */
-	private boolean
-			checksWhetherProductExists(boolean rollBack, Element record)
-					throws IOException {
+	private boolean checksWhetherProductExists(Element record)
+			throws IOException {
 		List<Attribute> recordAttributes = record.getAttributes();
 		for (Attribute attribute : recordAttributes) {
 			ctx.out().println(
 					attribute.getName() + " - " + attribute.getValue());
-			// if current 'record' element attribute is swd
 			if (attribute.getName().equals("swd")) {
 				ctx.out().println(
 						"Checking whether product with swd "
 								+ attribute.getValue() + " already exists");
-				// if there is already a product with the same search word
-				if (isRecordExisting(ctx, attribute.getValue())) {
-					// the transaction has to be rolled back
+				if (isRecordExisting(attribute.getValue())) {
 					rollBack = true;
 					bufferedWriter.write("Product with swd "
 							+ attribute.getValue() + " already exists");
@@ -139,22 +134,18 @@ public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess{
 	/**
 	 * Creates the products.
 	 * 
-	 * @param dbContext The database context.
 	 * @param record The current record element from the XML file.
-	 * @param productEditor The ProductEditor instance.
 	 */
-	private void createProduct(Element record, ProductEditor productEditor) {
-		// gets all child elements of each 'record' element
+	private void createProduct(Element record) {
 		List<Element> recordChildren = record.getChildren();
-		// iterates all child elements of each 'record' element
 		for (Element recordChild : recordChildren) {
 			if (recordChild.getName().equals("header")) {
 				ctx.out().println("writing header");
-				writeProductHeaderFields(recordChild, productEditor, ctx);
+				writeProductHeaderFields(recordChild);
 			}
 			else if (recordChild.getName().equals("row")) {
 				ctx.out().println("writing row");
-				writeProductRowFields(recordChild, productEditor, ctx);
+				writeProductRowFields(recordChild);
 			}
 		}
 	}
@@ -163,9 +154,6 @@ public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess{
 	 * Checks whether each record's product is not already existing. Then
 	 * creates product or sets rollback to true.
 	 * 
-	 * @param dbContext The database context.
-	 * @param bufferedWriter The BufferedWriter instance.
-	 * @param rollBack Whether or not to roll back.
 	 * @param records The records from the XML file.
 	 * @return Returns value of rollBack, to indicate whether or not a roll back
 	 * is necessary.
@@ -175,23 +163,19 @@ public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess{
 			throws IOException {
 		for (Element record : records) {
 			productEditor = ctx.newObject(ProductEditor.class);
-			rollBack = checksWhetherProductExists(rollBack, record);
+			rollBack = checksWhetherProductExists(record);
 			if (rollBack == true) {
-				// if rollBack is true the opened ProductEditor instance is
-				// aborted and the foreach loop is cancelled
 				productEditor.abort();
 				break;
 			}
 			else {
-				createProduct(record, productEditor);
+				createProduct(record);
 			}
-			// saves the new product
 			productEditor.commit();
 			// for testing the ProductEditor instance can be aborted
 			// productEditor.abort();
 
-			logProductCreation(productEditor.objectId().getSwd(), productEditor.objectId()
-					.getIdno());
+			logProductCreation();
 		}
 	}
 
@@ -218,16 +202,15 @@ public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess{
 	/**
 	 * Checks whether a product with the same search word exists.
 	 * 
-	 * @param dbContext The database context.
 	 * @param swd The search word.
 	 * @return Returns true if the a product with the search word exits, else
 	 * returns false.
 	 */
-	private boolean isRecordExisting(DbContext dbContext, String swd) {
+	private boolean isRecordExisting(String swd) {
 		SelectionBuilder<Product> selectionBuilder =
 				SelectionBuilder.create(Product.class);
 		selectionBuilder.add(Conditions.eq(Product.META.swd, swd));
-		Product first = QueryUtil.getFirst(dbContext, selectionBuilder.build());
+		Product first = QueryUtil.getFirst(ctx, selectionBuilder.build());
 		if (first == null) {
 			return false;
 		}
@@ -249,16 +232,12 @@ public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess{
 	/**
 	 * Logs the commit process.
 	 * 
-	 * @param dbContext The database context.
-	 * @param bufferedWriter The BufferedWriter instance.
-	 * @param swd The search word.
-	 * @param idno The identification number.
 	 * @throws IOException The exception thrown if an error occurs.
 	 */
-	private void logProductCreation(String swd, String idno) throws IOException {
-		// logs the process
+	private void logProductCreation() throws IOException {
 		ctx.out().println("commit and log ----------------->");
-		bufferedWriter.write(swd + " - " + idno);
+		bufferedWriter.write(productEditor.objectId().getSwd() + " - "
+				+ productEditor.objectId().getIdno());
 		bufferedWriter.newLine();
 	}
 
@@ -325,17 +304,14 @@ public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess{
 	 * 
 	 * @param recordChild The child element of the 'record' element containing
 	 * information about the record's head.
-	 * @param productEditor The ProductEditor instance.
 	 * @param dbContext The database context.
 	 */
-	private void writeProductHeaderFields(Element recordChild,
-			ProductEditor productEditor, DbContext dbContext) {
-		// gets the head fields as child elements of the 'header' element
+	private void writeProductHeaderFields(Element recordChild) {
 		List<Element> fields = recordChild.getChildren();
 		for (Element field : fields) {
 			String fieldName = field.getAttributeValue("name");
 			String fieldValue = field.getValue();
-			dbContext.out().println(fieldName + " - " + fieldValue);
+			ctx.out().println(fieldName + " - " + fieldValue);
 			productEditor.setString(fieldName, fieldValue);
 		}
 	}
@@ -346,18 +322,14 @@ public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess{
 	 * 
 	 * @param recordChild The child element of the 'record' element containing
 	 * information about the record's table rows.
-	 * @param productEditor The ProductEditor instance.
-	 * @param dbContext The database context.
 	 */
-	private void writeProductRowFields(Element recordChild,
-			ProductEditor productEditor, DbContext dbContext) {
-		// gets the row fields as child elements of the 'row' element
+	private void writeProductRowFields(Element recordChild) {
 		List<Element> fields = recordChild.getChildren();
 		ProductEditor.Row appendRow = productEditor.table().appendRow();
 		for (Element field : fields) {
 			String fieldName = field.getAttributeValue("name");
 			String fieldValue = field.getValue();
-			dbContext.out().println(fieldName + " - " + fieldValue);
+			ctx.out().println(fieldName + " - " + fieldValue);
 			appendRow.setString(fieldName, fieldValue);
 		}
 	}
