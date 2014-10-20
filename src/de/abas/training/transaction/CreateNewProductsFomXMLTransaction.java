@@ -21,6 +21,14 @@ import de.abas.erp.db.selection.SelectionBuilder;
 import de.abas.erp.db.util.QueryUtil;
 import de.abas.training.common.AbstractAjoAccess;
 
+/**
+ * This class reads from a XML file, extracts the products stored in it and
+ * creates new products accordingly. If a product with the same search word
+ * already exists the transaction is rolled back completely.
+ * 
+ * @author abas Software AG
+ *
+ */
 public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess {
 	private final String XML_FILE =
 			"java/projects/AJOAdvanced/files/products.xml";
@@ -85,7 +93,7 @@ public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess {
 	 * necessary.
 	 * @throws IOException Exception thrown if an error occurred.
 	 */
-	private boolean checksWhetherProductExists(Element record)
+	private void checksWhetherProductExists(Element record)
 			throws IOException {
 		List<Attribute> recordAttributes = record.getAttributes();
 		for (Attribute attribute : recordAttributes) {
@@ -103,7 +111,6 @@ public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess {
 				}
 			}
 		}
-		return rollBack;
 	}
 
 	/**
@@ -163,7 +170,7 @@ public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess {
 			throws IOException {
 		for (Element record : records) {
 			productEditor = ctx.newObject(ProductEditor.class);
-			rollBack = checksWhetherProductExists(record);
+			checksWhetherProductExists(record);
 			if (rollBack == true) {
 				productEditor.abort();
 				break;
