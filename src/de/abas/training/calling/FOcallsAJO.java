@@ -1,13 +1,15 @@
 package de.abas.training.calling;
 
-import de.abas.training.common.AbstractAjoAccess;
+import de.abas.eks.jfop.FOPException;
+import de.abas.eks.jfop.remote.ContextRunnable;
+import de.abas.eks.jfop.remote.FOPSessionContext;
 
-public class FOcallsAJO extends AbstractAjoAccess {
+public class FOcallsAJO implements ContextRunnable {
 
-	@Override
-	public void run(String[] args) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public int runFop(FOPSessionContext arg0, String[] arg1) throws FOPException {
+	// TODO Auto-generated method stub
+	return 0;
+    }
 
 }
