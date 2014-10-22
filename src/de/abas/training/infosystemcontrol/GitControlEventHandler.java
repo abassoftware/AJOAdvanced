@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import de.abas.eks.jfop.remote.EKS;
 import de.abas.eks.jfop.remote.FO;
+import de.abas.erp.api.gui.ButtonSet;
 import de.abas.erp.api.gui.TextBox;
 import de.abas.erp.api.system.SystemCommand;
 import de.abas.erp.axi.event.EventException;
@@ -17,6 +18,7 @@ import de.abas.erp.axi2.annotation.ButtonEventHandler;
 import de.abas.erp.axi2.annotation.EventHandler;
 import de.abas.erp.axi2.event.ButtonEvent;
 import de.abas.erp.axi2.type.ButtonEventType;
+import de.abas.erp.common.type.enums.EnumDialogBox;
 import de.abas.erp.db.DbContext;
 import de.abas.erp.db.infosystem.custom.ow1.GitControl;
 import de.abas.erp.db.infosystem.custom.ow1.GitControl.Row;
@@ -35,7 +37,6 @@ public class GitControlEventHandler {
     @ButtonEventHandler(field = "start", type = ButtonEventType.AFTER)
     public void startAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
 	this.screenControl = screenControl;
-	head.table().clear();
 	getGitStatus(head);
     }
 
@@ -65,25 +66,23 @@ public class GitControlEventHandler {
     @ButtonEventHandler(field = "ycommit", type = ButtonEventType.AFTER)
     public void ycommitAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
 	this.screenControl = screenControl;
-	BufferedReader bufferedReader = null;
 	String commitMessage = getCommitMessage(head);
 	setUsername(ctx);
 	setEmail(ctx);
-	try {
-	    bufferedReader = runSystemCommand("git commit -m \"" + commitMessage + "\"");
-	    String console = getConsole(bufferedReader);
-	    getGitStatus(head);
-	    resetCommitMessage(head);
-	    new TextBox(ctx, "git commit", console).show();
-	}
-	catch (IOException e) {
-	    throw new EventException(e.getMessage());
-	}
+	commitChanges(ctx, head, "git commit -m \"" + commitMessage + "\"", commitMessage);
     }
 
     @ButtonEventHandler(field = "ycommitall", type = ButtonEventType.AFTER)
     public void ycommitallAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
-	// TODO Auto-generated method stub
+	this.screenControl = screenControl;
+	EnumDialogBox box = new TextBox(ctx, "commiting all changes", "Are you sure you want to commit all changes in all files?\nThis does not include untracked files.")
+		.setButtons(ButtonSet.YES_NO).show();
+	if (box.equals(EnumDialogBox.Yes)) {
+	    String commitMessage = getCommitMessage(head);
+	    setUsername(ctx);
+	    setEmail(ctx);
+	    commitChanges(ctx, head, "git commit -a -m \"" + commitMessage + "\"", commitMessage);
+	}
     }
 
     @ButtonEventHandler(field = "ygitignore", type = ButtonEventType.AFTER)
@@ -119,7 +118,6 @@ public class GitControlEventHandler {
     @ButtonEventHandler(field = "ystatus", type = ButtonEventType.AFTER)
     public void ystatusAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
 	this.screenControl = screenControl;
-	head.table().clear();
 	getGitStatus(head);
     }
 
@@ -178,6 +176,23 @@ public class GitControlEventHandler {
 	}
     }
 
+    private void commitChanges(DbContext ctx, GitControl head, String command, String commitMessage) throws EventException {
+	BufferedReader bufferedReader = null;
+	try {
+	    bufferedReader = runSystemCommand(command);
+	    String console = getConsole(bufferedReader);
+	    getGitStatus(head);
+	    resetCommitMessage(head);
+	    showSuccessfulCommitTextBox(ctx, console);
+	}
+	catch (IOException e) {
+	    throw new EventException(e.getMessage());
+	}
+	finally {
+	    closeBufferedReader(bufferedReader);
+	}
+    }
+
     private String getCommitMessage(GitControl head) throws EventException {
 	String commitMessage = head.getYcommitmessage();
 	if (head.getYcommitmessage().isEmpty()) {
@@ -212,6 +227,7 @@ public class GitControlEventHandler {
     }
 
     private void getGitStatus(GitControl head) throws EventException {
+	head.table().clear();
 	getFiles(head, "git ls-files --others --exclude-standard", false, ICON_UNTRACKED);
 	getFiles(head, "git ls-files -m", false, ICON_MODIFIED);
 	getFiles(head, "git diff --name-only --staged", true, ICON_STAGED);
@@ -223,7 +239,7 @@ public class GitControlEventHandler {
 	    File file = new File(".gitignore");
 	    if (file.createNewFile()) {
 		bufferedWriter = new BufferedWriter(new FileWriter(file));
-		bufferedWriter.append("*\n!masken/\n!java/\n!screens/\n!ow*/\n!.gitignore\n!fop.txt\n!masken/*\n!java/*\n!screens/*\n!ow*/*");
+		bufferedWriter.append("*\n!masken/\n!java/\n!screens/\n!ow*/\n!.gitignore\n!fop.txt\n!masken/**\n!java/**\n!screens/**\n!ow*/**\njava/jfopserver");
 		bufferedWriter.close();
 		new TextBox(ctx, ".gitignore created", "The file .gitignore was created, as it did not already exist").show();
 	    }
@@ -294,6 +310,15 @@ public class GitControlEventHandler {
 	}
 	catch (IOException e) {
 	    throw new EventException(e.getMessage());
+	}
+    }
+
+    private void showSuccessfulCommitTextBox(DbContext ctx, String console) {
+	if (console.length() < 132000) {
+	    new TextBox(ctx, "git commit", console).show();
+	}
+	else {
+	    new TextBox(ctx, "git commit", "commit successful").show();
 	}
     }
 
