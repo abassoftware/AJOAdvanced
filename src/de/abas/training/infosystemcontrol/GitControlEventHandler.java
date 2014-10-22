@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import de.abas.eks.jfop.remote.EKS;
+import de.abas.eks.jfop.remote.FO;
 import de.abas.erp.api.gui.TextBox;
 import de.abas.erp.api.system.SystemCommand;
 import de.abas.erp.axi.event.EventException;
@@ -63,7 +64,21 @@ public class GitControlEventHandler {
 
     @ButtonEventHandler(field = "ycommit", type = ButtonEventType.AFTER)
     public void ycommitAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
-	// TODO Auto-generated method stub
+	this.screenControl = screenControl;
+	BufferedReader bufferedReader = null;
+	String commitMessage = getCommitMessage(head);
+	setUsername(ctx);
+	setEmail(ctx);
+	try {
+	    bufferedReader = runSystemCommand("git commit -m \"" + commitMessage + "\"");
+	    String console = getConsole(bufferedReader);
+	    getGitStatus(head);
+	    resetCommitMessage(head);
+	    new TextBox(ctx, "git commit", console).show();
+	}
+	catch (IOException e) {
+	    throw new EventException(e.getMessage());
+	}
     }
 
     @ButtonEventHandler(field = "ycommitall", type = ButtonEventType.AFTER)
@@ -163,6 +178,15 @@ public class GitControlEventHandler {
 	}
     }
 
+    private String getCommitMessage(GitControl head) throws EventException {
+	String commitMessage = head.getYcommitmessage();
+	if (head.getYcommitmessage().isEmpty()) {
+	    screenControl.moveCursor(head, GitControl.META.ycommitmessage);
+	    throw new EventException("The commit message cannot be left empty.");
+	}
+	return commitMessage;
+    }
+
     private String getConsole(BufferedReader bufferedReader) throws IOException {
 	String line = "";
 	String message = "";
@@ -227,17 +251,49 @@ public class GitControlEventHandler {
 	EKS.editiere("\".gitignore\"");
     }
 
+    private void resetCommitMessage(GitControl head) {
+	head.setYcommitmessage("");
+    }
+
     private BufferedReader runSystemCommand(String command) throws IOException {
 	SystemCommand systemCommand = new SystemCommand(command, false);
 	if (systemCommand.runHidden()) {
 	    return new BufferedReader(systemCommand.getOut());
 	}
-	throw new IOException("Running system command " + command + "failed.");
+	throw new IOException("Running system command " + command + " failed.");
+    }
+
+    private void setEmail(DbContext ctx) throws EventException {
+	String email = FO.lesen(new String[] { "Please enter your email address:" });
+	while (!email.matches("^[A-Za-z0-9\\.\\-_]+@[A-Za-z0-9\\.\\-_]+\\.[a-z]+$")) {
+	    new TextBox(ctx, "Invalid email address", "Please enter a valid email address:\n e.g.: john.doe@domain.locale").show();
+	    email = FO.lesen(new String[] { "Please enter your email address:" });
+	}
+	try {
+	    runSystemCommand("git config --global user.email " + email);
+	}
+	catch (IOException e) {
+	    throw new EventException(e.getMessage());
+	}
     }
 
     private void setProtectionForStagedFiles(boolean isStaged, Row row) {
 	if (isStaged) {
 	    screenControl.setProtection(row, GitControl.Row.META.ystaged, true);
+	}
+    }
+
+    private void setUsername(DbContext ctx) throws EventException {
+	String username = FO.lesen(new String[] { "Please enter your name:" });
+	while (!username.matches("^[A-ZÄÖÜ][a-zäöüß]+[ ][A-ZÄÖÜa-zäöüß ]*[A-ZÄÖÜ][a-zäöüß]+$")) {
+	    new TextBox(ctx, "Invalid name", "Your name needs to consist of your first and last name and it is case sensitive:\n e.g.: John Doe").show();
+	    username = FO.lesen(new String[] { "Please enter your name:" });
+	}
+	try {
+	    runSystemCommand("git config --global user.name " + username);
+	}
+	catch (IOException e) {
+	    throw new EventException(e.getMessage());
 	}
     }
 
