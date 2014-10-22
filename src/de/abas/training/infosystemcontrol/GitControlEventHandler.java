@@ -29,15 +29,22 @@ public class GitControlEventHandler {
     private final String ICON_MODIFIED = "icon:ball_orange";
     private final String ICON_UNTRACKED = "icon:ball_red";
 
+    private ScreenControl screenControl = null;
+
     @ButtonEventHandler(field = "start", type = ButtonEventType.AFTER)
     public void startAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+	this.screenControl = screenControl;
 	head.table().clear();
 	getGitStatus(head);
     }
 
     @ButtonEventHandler(field = "yadd", type = ButtonEventType.AFTER)
     public void yaddAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
-	// TODO Auto-generated method stub
+	this.screenControl = screenControl;
+	Iterable<Row> rows = head.table().getRows();
+	for (Row row : rows) {
+	    addFile(row);
+	}
     }
 
     @ButtonEventHandler(field = "ycommit", type = ButtonEventType.AFTER)
@@ -82,7 +89,21 @@ public class GitControlEventHandler {
 
     @ButtonEventHandler(field = "ystatus", type = ButtonEventType.AFTER)
     public void ystatusAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
-	// TODO Auto-generated method stub
+	this.screenControl = screenControl;
+	head.table().clear();
+	getGitStatus(head);
+    }
+
+    private void addFile(Row row) throws EventException {
+	if (row.getYstaged()) {
+	    try {
+		runSystemCommand("git add " + row.getYfile());
+		updateInfosystemTable(row);
+	    }
+	    catch (IOException e) {
+		throw new EventException(e.getMessage());
+	    }
+	}
     }
 
     private void closeBufferedReader(BufferedReader bufferedReader) throws EventException {
@@ -121,13 +142,7 @@ public class GitControlEventHandler {
 	BufferedReader bufferedReader = null;
 	try {
 	    bufferedReader = runSystemCommand(command);
-	    String line = "";
-	    while ((line = bufferedReader.readLine()) != null) {
-		Row row = head.table().appendRow();
-		row.setYstaged(isStaged);
-		row.setYfile(line);
-		row.setYstate(icon);
-	    }
+	    loadInfosystemTable(head, isStaged, icon, bufferedReader);
 	}
 	catch (IOException e) {
 	    throw new EventException("An error occurred while reading from console.");
@@ -162,6 +177,17 @@ public class GitControlEventHandler {
 	}
     }
 
+    private void loadInfosystemTable(GitControl head, boolean isStaged, String icon, BufferedReader bufferedReader) throws IOException {
+	String line = "";
+	while ((line = bufferedReader.readLine()) != null) {
+	    Row row = head.table().appendRow();
+	    row.setYstaged(false);
+	    row.setYfile(line);
+	    row.setYstate(icon);
+	    setProtectionForStagedFiles(isStaged, row);
+	}
+    }
+
     private void openGitIgnoreInEditor() {
 	EKS.editiere("\".gitignore\"");
     }
@@ -172,6 +198,18 @@ public class GitControlEventHandler {
 	    return new BufferedReader(systemCommand.getOut());
 	}
 	throw new IOException("Running system command " + command + "faild.");
+    }
+
+    private void setProtectionForStagedFiles(boolean isStaged, Row row) {
+	if (isStaged) {
+	    screenControl.setProtection(row, GitControl.Row.META.ystaged, true);
+	}
+    }
+
+    private void updateInfosystemTable(Row row) {
+	row.setYstaged(false);
+	screenControl.setProtection(row, GitControl.Row.META.ystaged, true);
+	row.setYstateicon(ICON_STAGED);
     }
 
 }
