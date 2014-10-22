@@ -47,6 +47,20 @@ public class GitControlEventHandler {
 	}
     }
 
+    @ButtonEventHandler(field = "yaddall", type = ButtonEventType.AFTER)
+    public void yaddallAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+	this.screenControl = screenControl;
+	addAllFiles(head);
+    }
+
+    @ButtonEventHandler(field = "ycheckall", type = ButtonEventType.AFTER)
+    public void ycheckallAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+	Iterable<Row> rows = head.table().getRows();
+	for (Row row : rows) {
+	    row.setYstaged(true);
+	}
+    }
+
     @ButtonEventHandler(field = "ycommit", type = ButtonEventType.AFTER)
     public void ycommitAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
 	// TODO Auto-generated method stub
@@ -92,6 +106,27 @@ public class GitControlEventHandler {
 	this.screenControl = screenControl;
 	head.table().clear();
 	getGitStatus(head);
+    }
+
+    @ButtonEventHandler(field = "yuncheckall", type = ButtonEventType.AFTER)
+    public void yuncheckallAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+	Iterable<Row> rows = head.table().getRows();
+	for (Row row : rows) {
+	    row.setYstaged(false);
+	}
+    }
+
+    private void addAllFiles(GitControl head) throws EventException {
+	try {
+	    runSystemCommand("git add --all");
+	    Iterable<Row> rows = head.table().getRows();
+	    for (Row row : rows) {
+		updateInfosystemTable(row);
+	    }
+	}
+	catch (IOException e) {
+	    throw new EventException(e.getMessage());
+	}
     }
 
     private void addFile(Row row) throws EventException {
@@ -197,7 +232,7 @@ public class GitControlEventHandler {
 	if (systemCommand.runHidden()) {
 	    return new BufferedReader(systemCommand.getOut());
 	}
-	throw new IOException("Running system command " + command + "faild.");
+	throw new IOException("Running system command " + command + "failed.");
     }
 
     private void setProtectionForStagedFiles(boolean isStaged, Row row) {
