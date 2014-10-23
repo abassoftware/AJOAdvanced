@@ -324,11 +324,14 @@ public class GitControlEventHandler {
      * @throws EventException Exception thrown if an error occurs.
      */
     private void createGitIgnore(DbContext ctx) throws IOException, EventException {
-	initializeGitIgnore("*\n!.gitignore\n!fop.txt\n!/masken/\n!/java/\n!/screens/\n!/ow*/");
-	initializeGitIgnore("masken/", "!**");
-	initializeGitIgnore("java/", "!**\njava/jfopserver");
-	initializeGitIgnore("screens/", "!**");
-	new TextBox(ctx, ".gitignore created", "The file .gitignore was created, as it did not already exist").show();
+	boolean newFileFlag = false;
+	newFileFlag = initializeGitIgnore(ctx, "*\n!.gitignore\n!fop.txt\n!/masken/\n!/java/\n!/screens/\n!/ow*/");
+	newFileFlag = initializeGitIgnore("masken/", "!**");
+	newFileFlag = initializeGitIgnore("java/", "!**\njava/jfopserver");
+	newFileFlag = initializeGitIgnore("screens/", "!**");
+	if (newFileFlag) {
+	    new TextBox(ctx, ".gitignore created", "The file .gitignore was created, as it did not already exist").show();
+	}
     }
 
     /**
@@ -404,11 +407,12 @@ public class GitControlEventHandler {
      * Overrides initializeGitIgnore(String path, String fileContent) for path being the current directory.
      *
      * @param fileContent The content of .gitignore file.
+     * @return Whether or not new .gitignore file was created.
      * @throws EventException Thrown if an error occurs.
      * @throws IOException Thrown if something went from with the BufferdWriter instance.
      */
-    private void initializeGitIgnore(String fileContent) throws EventException, IOException {
-	initializeGitIgnore("", fileContent);
+    private boolean initializeGitIgnore(DbContext ctx, String fileContent) throws EventException, IOException {
+	return initializeGitIgnore("", fileContent);
     }
 
     /**
@@ -416,18 +420,22 @@ public class GitControlEventHandler {
      *
      * @param path The path to .gitignore file.
      * @param fileContent The content of .gitignore file.
+     * @return Whether or not new .gitignore file was created.
      * @throws EventException Thrown if an error occurs.
      * @throws IOException Thrown if something went from with the BufferdWriter instance.
      */
-    private void initializeGitIgnore(String path, String fileContent) throws IOException, EventException {
+    private boolean initializeGitIgnore(String path, String fileContent) throws IOException, EventException {
 	BufferedWriter bufferedWriter = null;
+	boolean newFileFlag = false;
 	try {
 	    File file = new File(path + ".gitignore");
 	    if (file.createNewFile()) {
 		bufferedWriter = new BufferedWriter(new FileWriter(file));
 		bufferedWriter.append(fileContent);
 		bufferedWriter.close();
+		newFileFlag = true;
 	    }
+	    return newFileFlag;
 	}
 	catch (IOException e) {
 	    throw new IOException();
