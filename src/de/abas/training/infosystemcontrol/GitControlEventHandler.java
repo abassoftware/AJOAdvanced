@@ -151,7 +151,7 @@ public class GitControlEventHandler {
     @ButtonEventHandler(field = "ygitignore", type = ButtonEventType.AFTER)
     public void ygitignoreAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
 	try {
-	    initializeGitIgnore(ctx);
+	    createGitIgnore(ctx);
 	    openGitIgnoreInEditor();
 	}
 	catch (SecurityException e) {
@@ -317,6 +317,22 @@ public class GitControlEventHandler {
     }
 
     /**
+     * Creates .gitignore if .gitignore does not exist and initializes it with default values..
+     *
+     * @param ctx The database context.
+     * @throws IOException Exception thrown if something went wrong with the BufferedWriter.
+     * @throws EventException Exception thrown if an error occurs.
+     */
+    private void createGitIgnore(DbContext ctx) throws IOException, EventException {
+	initializeGitIgnore("*\n!.gitignore\n!fop.txt\n!/masken/\n!/java/\n!/screens/\n!/ow*/");
+	initializeGitIgnore("masken/", "!**");
+	initializeGitIgnore("java/", "!**\njava/jfopserver");
+	initializeGitIgnore("screens/", "!**");
+	initializeGitIgnore("ow*/", "!**");
+	new TextBox(ctx, ".gitignore created", "The file .gitignore was created, as it did not already exist").show();
+    }
+
+    /**
      * Gets the commit message. If the commit message is empty, the cursor is moved to field ycommitmessage and an error message is displayed.
      *
      * @param head The GitControl instance.
@@ -386,21 +402,32 @@ public class GitControlEventHandler {
     }
 
     /**
-     * Creates .gitignore if .gitignore does not exist and initializes it with default values..
+     * Overrides initializeGitIgnore(String path, String fileContent) for path being the current directory.
      *
-     * @param ctx The database context.
-     * @throws IOException Exception thrown if something went wrong with the BufferedWriter.
-     * @throws EventException Exception thrown if an error occurs.
+     * @param fileContent The content of .gitignore file.
+     * @throws EventException Thrown if an error occurs.
+     * @throws IOException Thrown if something went from with the BufferdWriter instance.
      */
-    private void initializeGitIgnore(DbContext ctx) throws IOException, EventException {
+    private void initializeGitIgnore(String fileContent) throws EventException, IOException {
+	initializeGitIgnore("", fileContent);
+    }
+
+    /**
+     * Creates .gitignore if not existent and initializes it.
+     *
+     * @param path The path to .gitignore file.
+     * @param fileContent The content of .gitignore file.
+     * @throws EventException Thrown if an error occurs.
+     * @throws IOException Thrown if something went from with the BufferdWriter instance.
+     */
+    private void initializeGitIgnore(String path, String fileContent) throws IOException, EventException {
 	BufferedWriter bufferedWriter = null;
 	try {
-	    File file = new File(".gitignore");
+	    File file = new File(path + ".gitignore");
 	    if (file.createNewFile()) {
 		bufferedWriter = new BufferedWriter(new FileWriter(file));
-		bufferedWriter.append("*\n!masken/\n!java/\n!screens/\n!ow*/\n!.gitignore\n!fop.txt\n!masken/**\n!java/**\n!screens/**\n!ow*/**\njava/jfopserver");
+		bufferedWriter.append(fileContent);
 		bufferedWriter.close();
-		new TextBox(ctx, ".gitignore created", "The file .gitignore was created, as it did not already exist").show();
 	    }
 	}
 	catch (IOException e) {
