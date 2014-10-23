@@ -328,7 +328,6 @@ public class GitControlEventHandler {
 	initializeGitIgnore("masken/", "!**");
 	initializeGitIgnore("java/", "!**\njava/jfopserver");
 	initializeGitIgnore("screens/", "!**");
-	initializeGitIgnore("ow*/", "!**");
 	new TextBox(ctx, ".gitignore created", "The file .gitignore was created, as it did not already exist").show();
     }
 
