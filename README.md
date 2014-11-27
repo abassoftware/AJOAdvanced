@@ -1,7 +1,7 @@
 AJOAdvanced
 ===========
 
-Template and solution for advanced AJO trainings
+Template and examples for advanced AJO trainings
 
-- The master branch contains the templates for the training and is cloned at the beginning of the training.
-- The solution branch contains the solution to all excercises of the training.
+- The master branch contains all examples of the advenced AJO training.
+- The template branch contains the templates for the attendees to work on.
