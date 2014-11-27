@@ -1,4 +1,4 @@
-package de.abas.training.common;
+package de.abas.training.advanced.common;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -11,9 +11,20 @@ import de.abas.erp.db.DbMessage;
 import de.abas.erp.db.MessageListener;
 import de.abas.erp.db.util.ContextHelper;
 
+/**
+ * Utility method for getting the client and/or server context.
+ *
+ * @author abas Software AG
+ *
+ */
 public abstract class AbstractAjoAccess implements ContextRunnable {
 
-	// Enumeration: ContextMode
+	/**
+	 * Context mode enumeration.
+	 *
+	 * @author abas Software AG
+	 *
+	 */
 	public enum ContextMode {
 		UNDEFINED {
 			@Override
@@ -35,8 +46,13 @@ public abstract class AbstractAjoAccess implements ContextRunnable {
 		}
 	}
 
-	// Enumeration: Status
 	public enum Status {
+		/**
+		 * Status enumeration.
+		 *
+		 * @author abas Software AG
+		 *
+		 */
 		UNDEFINED {
 			@Override
 			public String toString() {
@@ -71,11 +87,12 @@ public abstract class AbstractAjoAccess implements ContextRunnable {
 	private FileWriter fileWriterLogging;
 
 	// Initialize DbContext
-	private DbContext ctx = null;
+	private DbContext dbContext = null;
 	private ContextMode mode = ContextMode.UNDEFINED;
 
-	// add default message listener.
-	// gets all text, status and error messages
+	/**
+	 * Adds a default message listener. Gets all text, status and error messages.
+	 */
 	public void addDefaultMessageListener() {
 		getDbContext().addMessageListener(new MessageListener() {
 			// Displays all text, status and error messages
@@ -87,12 +104,18 @@ public abstract class AbstractAjoAccess implements ContextRunnable {
 		});
 	}
 
-	// enable EDP-logging. Creates log file name, using class description
+	/**
+	 * Enables EDP logging. Creates a log file (name is class name).
+	 */
 	public final void enableLogging() {
 		enableLogging(getClass().getSimpleName() + ".log");
 	}
 
-	// enable EDP-logging. creates log file name, using parameter filename
+	/**
+	 * Enables EDP logging. Creates a log file (name as defined in parameter).
+	 *
+	 * @param fileName Name of log file.
+	 */
 	public void enableLogging(String fileName) {
 		try {
 			fileWriterLogging = new FileWriter(fileName);
@@ -103,105 +126,137 @@ public abstract class AbstractAjoAccess implements ContextRunnable {
 		}
 	}
 
-	// get DbContext
-	// creates a Client-Context if dbContext == null
+	/**
+	 * Gets the database context. Create a client context if dbContext == null
+	 *
+	 * @return The database context.
+	 */
 	public DbContext getDbContext() {
-		if (ctx == null) {
-			ctx =
-					ContextHelper.createClientContext(hostname, port, mandant,
-							password, this.getClass().getSimpleName());
+		if (dbContext == null) {
+			dbContext = ContextHelper.createClientContext(hostname, port, mandant, password, this.getClass().getSimpleName());
 			mode = ContextMode.CLIENT_MODE;
 		}
-		return ctx;
+		return dbContext;
 	}
 
-	// Connection parameter
-	// get hostname
+	/**
+	 * Returns the host name.
+	 *
+	 * @return The host name.
+	 */
 	public String getHostname() {
 		return hostname;
 	}
 
-	// get mandant
+	/**
+	 * Returns the client.
+	 *
+	 * @return The client.
+	 */
 	public String getMandant() {
 		return mandant;
 	}
 
-	// get dbContext mode
+	/**
+	 * Returns the context mode.
+	 *
+	 * @return The context mode.
+	 */
 	public String getMode() {
 		return mode.toString();
 	}
 
-	// get port
+	/**
+	 * Returns the port.
+	 *
+	 * @return The port.
+	 */
 	public int getPort() {
 		return port;
 	}
 
-	// Abstrakte run-Methode definieren. Diese muss in allen abgeleiteten
-	// Klassen eingebaut
-	// und vervollständigt werden.
+	/**
+	 * Abstract run method to implement in all derived classes.
+	 *
+	 * @param args
+	 */
 	public abstract void run(String[] args);
 
-	// if content of dbContext == null. Initialize mode
+	/**
+	 * Runs program in client mode. Creates client context if dbContext==null
+	 *
+	 * @param args
+	 */
 	public final void runClientProgram(String[] args) {
 		run(args);
-		// Protokollierung abschalten
 		disableLogging();
-		// Datenbankkontext schließen
 		getDbContext().close();
 	}
 
 	// server access: get server context. Initialize mode
 	@Override
-	public int runFop(FOPSessionContext fopSessionContext, String[] args)
-			throws FOPException {
-		ctx = fopSessionContext.getDbContext();
+	public int runFop(FOPSessionContext fopSessionContext, String[] args) throws FOPException {
+		dbContext = fopSessionContext.getDbContext();
 		mode = ContextMode.SERVER_MODE;
-		// run-methode aufrufen. Argumente übergeben
 		run(args);
 		return 0;
 	}
 
-	// if client context is running, set hostname
-	// close dbContext and define dbContont = null
+	/**
+	 * Sets the host name if client context is running.
+	 *
+	 * @param hostname The host name.
+	 */
 	public void setHostname(String hostname) {
 		if (isClientContextRunning()) {
 			this.hostname = hostname;
-			ctx.close();
-			ctx = null;
+			dbContext.close();
+			dbContext = null;
 		}
 	}
 
-	// if client context is running, set mandant
-	// close dbContext and define dbContont = null
+	/**
+	 * Sets the client if client context is running.
+	 *
+	 * @param mandant The client.
+	 */
 	public void setMandant(String mandant) {
 		if (isClientContextRunning()) {
 			this.mandant = mandant;
-			ctx.close();
-			ctx = null;
+			dbContext.close();
+			dbContext = null;
 		}
 	}
 
-	// if client context is running, set passwort
-	// close dbContext and define dbContont = null
+	/**
+	 * Sets the password if client context is running.
+	 *
+	 * @param password The password.
+	 */
 	public void setPassword(String password) {
 		if (isClientContextRunning()) {
 			this.password = password;
-			ctx.close();
-			ctx = null;
+			dbContext.close();
+			dbContext = null;
 		}
 	}
 
-	// if client context is running, set port
-	// close dbContext and define dbContont = null
+	/**
+	 * Sets the port if client context is running.
+	 *
+	 * @param port The port.
+	 */
 	public void setPort(int port) {
 		if (isClientContextRunning()) {
 			this.port = port;
-			ctx.close();
-			ctx = null;
+			dbContext.close();
+			dbContext = null;
 		}
 	}
 
-	// disable EDP-logging
+	/**
+	 * Disables EDP logging
+	 */
 	private void disableLogging() {
 		if (null != fileWriterLogging) {
 			try {
@@ -217,16 +272,17 @@ public abstract class AbstractAjoAccess implements ContextRunnable {
 		getDbContext().setLogger(null);
 	}
 
-	// is client context running?
-	// true -> client is running
-	// false -> client context is not running
+	/**
+	 * Checks whether the client context is running.
+	 *
+	 * @return true -> client context is running, false -> client context is not running
+	 */
 	private boolean isClientContextRunning() {
 		if (mode.equals(ContextMode.CLIENT_MODE)) {
 			return true;
 		}
 		else {
-			ctx.out().println(
-					"No Client-Mode running -> parameter may not be changed");
+			dbContext.out().println("No Client-Mode running -> parameter may not be changed");
 			return false;
 		}
 	}

@@ -1,4 +1,4 @@
-package de.abas.training.eventhandling;
+package de.abas.training.advanced.eventhandling;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -19,15 +19,15 @@ import de.abas.erp.db.schema.part.Product;
 import de.abas.erp.db.schema.part.SelectablePart;
 import de.abas.erp.db.schema.sales.PackingSlipEditor;
 import de.abas.erp.jfop.rt.api.annotation.RunFopWith;
-import de.abas.training.utilities.AbasDateUtilities;
+import de.abas.training.advanced.utilities.AbasDateUtilities;
 
 /**
  * The PackingSlipEventHandler handles events occurring in a packing slip object
  * (database 3:23).
- * 
+ *
  * This class calculates the warranty date on the basis of the warranty period
  * as specified in the product master files.
- * 
+ *
  * @author abas Software AG
  *
  */
@@ -36,11 +36,9 @@ import de.abas.training.utilities.AbasDateUtilities;
 public class PackingSlipEventHandler {
 
 	@ScreenEventHandler(type = ScreenEventType.ENTER)
-	public void screenEnter(ScreenEvent event, ScreenControl screenControl,
-			DbContext ctx, PackingSlipEditor head) throws EventException {
+	public void screenEnter(ScreenEvent event, ScreenControl screenControl, DbContext ctx, PackingSlipEditor head) throws EventException {
 		// Gets all rows of the PackingSlipEditor object
-		Iterable<PackingSlipEditor.Row> editableRows =
-				head.table().getEditableRows();
+		Iterable<PackingSlipEditor.Row> editableRows = head.table().getEditableRows();
 		// Gets the PackingSlipEditor's creation date
 		AbasDate dateFrom = head.getDateFrom();
 
@@ -63,9 +61,7 @@ public class PackingSlipEventHandler {
 				// checks whether the warranty period is maintained
 				if (warrantyPer != null) {
 					// calculates the warranty date
-					AbasDate warrantyDateDate =
-							calculateWarrantyDateUtilities(ctx, dateFrom,
-									warrantyPer);
+					AbasDate warrantyDateDate = calculateWarrantyDateUtilities(ctx, dateFrom, warrantyPer);
 					// stores the warranty date in the tablerow
 					row.setYtwadate(warrantyDateDate);
 				}
@@ -85,20 +81,16 @@ public class PackingSlipEventHandler {
 	 * date.
 	 * @return The real warranty date.
 	 */
-	private AbasDate calculateWarrantyDateUtilities(DbContext ctx,
-			AbasDate dateFrom, AbasDuration warrantyPer) {
+	private AbasDate calculateWarrantyDateUtilities(DbContext ctx, AbasDate dateFrom, AbasDuration warrantyPer) {
 		// creates instance of helper class AbasDateUtilities
 		AbasDateUtilities abasDateUtilities = new AbasDateUtilities();
 		// converts dateFrom from AbasDate to AbasDateTime
 		AbasDateTime abasDateTimeFrom = new AbasDateTime(dateFrom.toDate());
 		// adds the warranty period to calculate the exact warranty enddate
-		AbasDate calculatedAbasDate =
-				abasDateUtilities.addDuration(ctx, abasDateTimeFrom,
-						warrantyPer);
+		AbasDate calculatedAbasDate = abasDateUtilities.addDuration(ctx, abasDateTimeFrom, warrantyPer);
 		// calculates and returns the real warranty end date, which is the first
 		// day of the next month
-		AbasDate calculatedWarrantyAbasDate =
-				getCalculatedWarrantyDate(calculatedAbasDate);
+		AbasDate calculatedWarrantyAbasDate = getCalculatedWarrantyDate(calculatedAbasDate);
 		return calculatedWarrantyAbasDate;
 	}
 

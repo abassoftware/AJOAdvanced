@@ -1,4 +1,4 @@
-package de.abas.training.performance;
+package de.abas.training.advanced.performance;
 
 import de.abas.ceks.jedp.EDPSession;
 import de.abas.eks.jfop.FOPException;
@@ -19,12 +19,20 @@ import de.abas.erp.db.util.LegacyUtil;
  * This class shows how to optimize the performance of database requests with AJO.
  *
  * @author abas Software AG
- * @version 1.0
  *
  */
 public class PerformanceOptimization implements ContextRunnable {
 
 	private DbContext ctx = null;
+
+	@Override
+	public int runFop(FOPSessionContext ctx, String[] args) throws FOPException {
+		this.ctx = ctx.getDbContext();
+		runOnServer();
+		runClient(false);
+		runClient(true);
+		return 0;
+	}
 
 	/**
 	 * Print info about performance.
@@ -89,15 +97,6 @@ public class PerformanceOptimization implements ContextRunnable {
 		finally {
 			clientContext.close();
 		}
-	}
-
-	@Override
-	public int runFop(FOPSessionContext ctx, String[] args) throws FOPException {
-		this.ctx = ctx.getDbContext();
-		runOnServer();
-		runClient(false);
-		runClient(true);
-		return 0;
 	}
 
 	/**

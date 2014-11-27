@@ -1,4 +1,4 @@
-package de.abas.training.calling;
+package de.abas.training.advanced.calling;
 
 import de.abas.eks.jfop.FOPException;
 import de.abas.eks.jfop.remote.ContextRunnable;
@@ -54,48 +54,48 @@ import de.abas.jfop.base.buffer.UserTextBuffer;
  */
 public class FOcallsAJO implements ContextRunnable {
 
-    private DbContext ctx = null;
+	private DbContext ctx = null;
 
-    @Override
-    public int runFop(FOPSessionContext context, String[] args) throws FOPException {
-	ctx = context.getDbContext();
-	ctx.out().println("JFOP running ...");
-	ctx.close();
+	@Override
+	public int runFop(FOPSessionContext context, String[] args) throws FOPException {
+		ctx = context.getDbContext();
+		ctx.out().println("JFOP running ...");
+		ctx.close();
 
-	// gets the U buffer
-	// BufferFactory.newInstance(false) => FO commands German
-	// BufferFactory.newInstance(true) => FO commands English
-	UserTextBuffer userTextBuffer = BufferFactory.newInstance(false).getUserTextBuffer();
+		// gets the U buffer
+		// BufferFactory.newInstance(false) => FO commands German
+		// BufferFactory.newInstance(true) => FO commands English
+		UserTextBuffer userTextBuffer = BufferFactory.newInstance(false).getUserTextBuffer();
 
-	int no1 = 0;
-	int no2 = 0;
+		int no1 = 0;
+		int no2 = 0;
 
-	// checks whether the U buffer variable xiNo1 was already defined
-	if (userTextBuffer.isVarDefined("xiNo1")) {
-	    // assigns value of xiNo1 to no1
-	    no1 = userTextBuffer.getIntegerValue("xiNo1");
+		// checks whether the U buffer variable xiNo1 was already defined
+		if (userTextBuffer.isVarDefined("xiNo1")) {
+			// assigns value of xiNo1 to no1
+			no1 = userTextBuffer.getIntegerValue("xiNo1");
+		}
+
+		// checks whether the U buffer variable xiNo2 was already defined
+		if (userTextBuffer.isVarDefined("xiNo2")) {
+			// assigns value of xiNo2 to no2
+			no2 = userTextBuffer.getIntegerValue("xiNo2");
+		}
+
+		// adds no1 and no2
+		int result = no1 + no2;
+
+		// assigns result to U buffer variable xiResult
+		userTextBuffer.setValue("xiResult", result);
+
+		// returns to calling FOP
+		if (result != 0) {
+			// returns status 0 (ok) if result is not 0
+			return 0;
+		}
+		else {
+			// returns status 1 (error) else
+			return 1;
+		}
 	}
-
-	// checks whether the U buffer variable xiNo2 was already defined
-	if (userTextBuffer.isVarDefined("xiNo2")) {
-	    // assigns value of xiNo2 to no2
-	    no2 = userTextBuffer.getIntegerValue("xiNo2");
-	}
-
-	// adds no1 and no2
-	int result = no1 + no2;
-
-	// assigns result to U buffer variable xiResult
-	userTextBuffer.setValue("xiResult", result);
-
-	// returns to calling FOP
-	if (result != 0) {
-	    // returns status 0 (ok) if result is not 0
-	    return 0;
-	}
-	else {
-	    // returns status 1 (error) else
-	    return 1;
-	}
-    }
 }

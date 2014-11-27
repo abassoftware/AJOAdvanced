@@ -1,4 +1,4 @@
-package de.abas.training.utilities;
+package de.abas.training.advanced.utilities;
 
 import de.abas.erp.api.gui.TextBox;
 import de.abas.erp.common.type.AbasDate;
@@ -13,7 +13,7 @@ import de.abas.jfop.base.buffer.UserTextBuffer;
 /**
  * Utility class to add durations of the type AbasDuration to an AbasDate
  * object.
- * 
+ *
  * @author abas Software AG
  * @version 1.0
  *
@@ -58,14 +58,13 @@ public class AbasDateUtilities {
 
 	/**
 	 * Adds a number of days to an AbasDate.
-	 * 
+	 *
 	 * @param dbContext The database context.
 	 * @param date The AbasDate to add the days to.
 	 * @param days The amount of days to add.
 	 * @return The AbasDate with the days added.
 	 */
-	public AbasDate
-			addCalendarDays(DbContext dbContext, AbasDate date, int days) {
+	public AbasDate addCalendarDays(DbContext dbContext, AbasDate date, int days) {
 		// declares variables as in FOP
 		if (!getUserTextBuffer().isVarDefined(XGD2DATE)) {
 			getUserTextBuffer().defineVar(TYPE_GD2, XGD2DATE);
@@ -79,10 +78,8 @@ public class AbasDateUtilities {
 
 		// initializes variables and calculates new date
 		getUserTextBuffer().assign(XGD2DATE, date);
-		getUserTextBuffer().formulaField(XGD2RESULT, userTextBuffer,
-				XGD2DATE + " +" + days);
-		getUserTextBuffer()
-				.formulaValue(XGD8RESULT, userTextBuffer, XGD2RESULT);
+		getUserTextBuffer().formulaField(XGD2RESULT, userTextBuffer, XGD2DATE + " +" + days);
+		getUserTextBuffer().formulaValue(XGD8RESULT, userTextBuffer, XGD2RESULT);
 
 		// gets the new date from UserTextBuffer and returns it
 		AbasDate abasDate = getUserTextBuffer().getAbasDateValue(XGD8RESULT);
@@ -91,18 +88,17 @@ public class AbasDateUtilities {
 
 	/**
 	 * Adds an AbasDuration (e.g. 3D01h12m09s) to an AbasDate.
-	 * 
+	 *
 	 * Attention: Date calculations with seconds can only be done using
 	 * AbasDuration.
-	 * 
+	 *
 	 * @param dbContext The database context.
 	 * @param date The AbasDateTime instance to add the AbasDuration instance
 	 * to.
 	 * @param duration The AbasDuration instance to add.
 	 * @return The AbasDate instance with the duration added.
 	 */
-	public AbasDate addDuration(DbContext dbContext, AbasDateTime date,
-			AbasDuration duration) {
+	public AbasDate addDuration(DbContext dbContext, AbasDateTime date, AbasDuration duration) {
 		// declares variables as in FOP
 		if (!getUserTextBuffer().isVarDefined(XGD19DATE)) {
 			getUserTextBuffer().defineVar(TYPE_GD19, XGD19DATE);
@@ -123,8 +119,7 @@ public class AbasDateUtilities {
 
 		// calculates new AbasDate by adding the AbasDuration instance to the
 		// AbasDateTime instance.
-		getUserTextBuffer().formulaField(XGD14RESULT, userTextBuffer,
-				XGD19DATE + " + " + XGP4DURATION);
+		getUserTextBuffer().formulaField(XGD14RESULT, userTextBuffer, XGD19DATE + " + " + XGP4DURATION);
 
 		// gets the new date from UserTextBuffer and returns it
 		AbasDate abasDate = getUserTextBuffer().getAbasDateValue(XGD14RESULT);
@@ -133,7 +128,7 @@ public class AbasDateUtilities {
 
 	/**
 	 * Adds hours to an AbasTime correcting the day if necessary.
-	 * 
+	 *
 	 * @param dbContext The database context.
 	 * @param time The AbasTime to add the hours to.
 	 * @param hours The hours to add.
@@ -150,14 +145,12 @@ public class AbasDateUtilities {
 
 		// initializes variables and calculates new time
 		getUserTextBuffer().assign(XZSTART_TIME, time);
-		getUserTextBuffer().formulaField(XZRESULT_TIME, userTextBuffer,
-				XZSTART_TIME + " +" + hours);
+		getUserTextBuffer().formulaField(XZRESULT_TIME, userTextBuffer, XZSTART_TIME + " +" + hours);
 
 		// corrects the day if necessary
 		int dayCorrect = getGlobalTextBuffer().getIntegerValue(G_DAY_CORRECT);
 		if (dayCorrect > 0) {
-			TextBox textBox =
-					new TextBox(dbContext, TEXTBOX_HEADLINE, TEXTBOX_LINES);
+			TextBox textBox = new TextBox(dbContext, TEXTBOX_HEADLINE, TEXTBOX_LINES);
 			textBox.show();
 		}
 
@@ -168,7 +161,7 @@ public class AbasDateUtilities {
 
 	/**
 	 * Adds minutes to an AbasTime correcting the day if necessary.
-	 * 
+	 *
 	 * @param dbContext The database context.
 	 * @param time The AbasTime to add the minutes to.
 	 * @param minutes The minutes to add.
@@ -185,14 +178,12 @@ public class AbasDateUtilities {
 
 		// initializes variables and calculates new time
 		getUserTextBuffer().assign(XZSTART_TIME, time);
-		getUserTextBuffer().formulaField(XZRESULT_TIME, userTextBuffer,
-				XZSTART_TIME + " + " + minutes);
+		getUserTextBuffer().formulaField(XZRESULT_TIME, userTextBuffer, XZSTART_TIME + " + " + minutes);
 
 		// corrects the day if necessary
 		int dayCorrect = getGlobalTextBuffer().getIntegerValue(G_DAY_CORRECT);
 		if (dayCorrect > 0) {
-			TextBox textBox =
-					new TextBox(dbContext, TEXTBOX_HEADLINE, TEXTBOX_LINES);
+			TextBox textBox = new TextBox(dbContext, TEXTBOX_HEADLINE, TEXTBOX_LINES);
 			textBox.show();
 		}
 
@@ -203,7 +194,7 @@ public class AbasDateUtilities {
 
 	/**
 	 * Adds weeks to an AbasDate instance.
-	 * 
+	 *
 	 * @param dbContext The database context.
 	 * @param date The AbasDate instance to add the weeks to.
 	 * @param weeks The number of weeks to add.
@@ -223,21 +214,19 @@ public class AbasDateUtilities {
 
 		getUserTextBuffer().assign(XGD2DATE, date);
 
-		AbasDate addCalendarDays =
-				addCalendarDays(dbContext, date, (DAY_COUNT * weeks));
+		AbasDate addCalendarDays = addCalendarDays(dbContext, date, (DAY_COUNT * weeks));
 		return addCalendarDays;
 	}
 
 	/**
 	 * Adds a number of days to an AbasDate only considering working days.
-	 * 
+	 *
 	 * @param dbContext The database context.
 	 * @param date The AbasDate to add the days to.
 	 * @param days The amount of days to add.
 	 * @return The AbasDate with the days added.
 	 */
-	public AbasDate
-			addWorkingDays(DbContext dbContext, AbasDate date, int days) {
+	public AbasDate addWorkingDays(DbContext dbContext, AbasDate date, int days) {
 		// declares variables as in FOP
 		if (!getUserTextBuffer().isVarDefined(XGD2DATE)) {
 			getUserTextBuffer().defineVar(TYPE_GD2, XGD2DATE);
@@ -251,10 +240,8 @@ public class AbasDateUtilities {
 
 		// initializes variables and calculates new date
 		getUserTextBuffer().assign(XGD2DATE, date);
-		getUserTextBuffer().formulaField(XGD2RESULT, userTextBuffer,
-				XGD2DATE + " &" + days);
-		getUserTextBuffer()
-				.formulaValue(XGD8RESULT, userTextBuffer, XGD2RESULT);
+		getUserTextBuffer().formulaField(XGD2RESULT, userTextBuffer, XGD2DATE + " &" + days);
+		getUserTextBuffer().formulaValue(XGD8RESULT, userTextBuffer, XGD2RESULT);
 
 		// gets the new date from UserTextBuffer and returns it
 		AbasDate abasDate = getUserTextBuffer().getAbasDateValue(XGD8RESULT);
@@ -263,7 +250,7 @@ public class AbasDateUtilities {
 
 	/**
 	 * Gets the calendar week of an AbasDate instance.
-	 * 
+	 *
 	 * @param dbContext The database context.
 	 * @param date The AbasDate of which to find out the calendar week.
 	 * @return The calendar week as String.
@@ -283,14 +270,13 @@ public class AbasDateUtilities {
 
 	/**
 	 * Calculates the duration between two AbasTime instances in minutes.
-	 * 
+	 *
 	 * @param dbContext The database context.
 	 * @param beginTime The beginning time for the calculation.
 	 * @param endTime The end time for the calculation.
 	 * @return The amount of minutes between beginTime and endTime as Integer.
 	 */
-	public int getTimeDiffMinutes(DbContext dbContext, AbasTime beginTime,
-			AbasTime endTime) {
+	public int getTimeDiffMinutes(DbContext dbContext, AbasTime beginTime, AbasTime endTime) {
 		// declares variables as in FOP
 		if (!getUserTextBuffer().isVarDefined(XZSTART_TIME)) {
 			getUserTextBuffer().defineVar(TYPE_TIME, XZSTART_TIME);
@@ -307,38 +293,35 @@ public class AbasDateUtilities {
 		getUserTextBuffer().assign(XZEND_TIME, endTime);
 
 		// calculates the duration
-		getUserTextBuffer().formulaField(XIRESULT, userTextBuffer,
-				XZSTART_TIME + " - " + XZEND_TIME);
+		getUserTextBuffer().formulaField(XIRESULT, userTextBuffer, XZSTART_TIME + " - " + XZEND_TIME);
 		int integerValue = getUserTextBuffer().getIntegerValue(XIRESULT);
 		return integerValue;
 	}
 
 	/**
 	 * Subtracts a number of days from an AbasDate
-	 * 
+	 *
 	 * @param dbContext The database context
 	 * @param date The AbasDate to add the days to.
 	 * @param days The amount of days to subtract.
 	 * @return The AbasDate with the days subtracted.
 	 */
-	public AbasDate
-			subCalendarDays(DbContext dbContext, AbasDate date, int days) {
+	public AbasDate subCalendarDays(DbContext dbContext, AbasDate date, int days) {
 		return addCalendarDays(dbContext, date, -days);
 	}
 
 	/**
 	 * Subtracts an AbasDuration (e.g. 3D01h12m09s) to an AbasDate.
-	 * 
+	 *
 	 * Attention: Date calculations with seconds can only be done using
 	 * AbasDuration.
-	 * 
+	 *
 	 * @param dbContext The database context.
 	 * @param date The AbasDateTime instance to subtract the AbasDuration from.
 	 * @param duration The AbasDuration instance to subtract.
 	 * @return The AbasDate instance with the duration subtracted.
 	 */
-	public AbasDate subDuration(DbContext dbContext, AbasDateTime date,
-			AbasDuration duration) {
+	public AbasDate subDuration(DbContext dbContext, AbasDateTime date, AbasDuration duration) {
 		// declares variables as in FOP
 		if (!getUserTextBuffer().isVarDefined(XGD19DATE)) {
 			getUserTextBuffer().defineVar(TYPE_GD19, XGD19DATE);
@@ -359,8 +342,7 @@ public class AbasDateUtilities {
 
 		// calculates new AbasDate by subtracting the AbasDuration instance from
 		// the AbasDateTime instance
-		getUserTextBuffer().formulaField(XGD14RESULT, userTextBuffer,
-				XGD19DATE + " - " + XGP4DURATION);
+		getUserTextBuffer().formulaField(XGD14RESULT, userTextBuffer, XGD19DATE + " - " + XGP4DURATION);
 
 		// gets the new date from UserTextBuffer and returns it
 		AbasDate abasDate = getUserTextBuffer().getAbasDateValue(XGD14RESULT);
@@ -369,7 +351,7 @@ public class AbasDateUtilities {
 
 	/**
 	 * Subtracts hours from an AbasTime correcting the day if necessary.
-	 * 
+	 *
 	 * @param dbContext The database context.
 	 * @param time The AbasTime to subtract the hours from.
 	 * @param hours The hours to subtract.
@@ -381,7 +363,7 @@ public class AbasDateUtilities {
 
 	/**
 	 * Subtracts minutes from an AbasTime correcting the day if necessary.
-	 * 
+	 *
 	 * @param dbContext The database context.
 	 * @param time The AbasTime to subtract the minutes from.
 	 * @param minutes The minutes to subtract.
@@ -393,7 +375,7 @@ public class AbasDateUtilities {
 
 	/**
 	 * Subtracts weeks from an AbasDate instance.
-	 * 
+	 *
 	 * @param dbContext The database context.
 	 * @param date The AbasDate instance to subtract the weeks from.
 	 * @param weeks The number of weeks to subtract.
@@ -406,27 +388,25 @@ public class AbasDateUtilities {
 	/**
 	 * Subtracts a number of days from an AbasDate only considering working
 	 * days.
-	 * 
+	 *
 	 * @param dbContext The database context.
 	 * @param date The AbasDate to subtract the days from.
 	 * @param days The amount of days to subtract.
 	 * @return The AbasDate with the days subtracted.
 	 */
-	public AbasDate
-			subWorkingDays(DbContext dbContext, AbasDate date, int days) {
+	public AbasDate subWorkingDays(DbContext dbContext, AbasDate date, int days) {
 		return addWorkingDays(dbContext, date, -days);
 	}
 
 	/**
 	 * Uses an instance of the BufferFactory to get an object of
 	 * GlobalTextBuffer. Only one GlobalTextBuffer obejct is necessary.
-	 * 
+	 *
 	 * @return The instance of GlobalTextBuffer is returned.
 	 */
 	private GlobalTextBuffer getGlobalTextBuffer() {
 		if (globalTextBuffer == null) {
-			globalTextBuffer =
-					BufferFactory.newInstance(true).getGlobalTextBuffer();
+			globalTextBuffer = BufferFactory.newInstance(true).getGlobalTextBuffer();
 		}
 		return globalTextBuffer;
 	}
@@ -434,13 +414,12 @@ public class AbasDateUtilities {
 	/**
 	 * Uses an instance of the BufferFactory to get an object of UserTextBuffer.
 	 * Only one UserTextBuffer object is necessary.
-	 * 
+	 *
 	 * @return The instance of UserTextBuffer is returned.
 	 */
 	private UserTextBuffer getUserTextBuffer() {
 		if (userTextBuffer == null) {
-			userTextBuffer =
-					BufferFactory.newInstance(true).getUserTextBuffer();
+			userTextBuffer = BufferFactory.newInstance(true).getUserTextBuffer();
 		}
 		return userTextBuffer;
 	}

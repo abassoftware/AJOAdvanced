@@ -1,14 +1,14 @@
-package de.abas.training.calling;
+package de.abas.training.advanced.calling;
 
 import de.abas.eks.jfop.remote.FOe;
 import de.abas.erp.db.DbContext;
 import de.abas.jfop.base.buffer.BufferFactory;
 import de.abas.jfop.base.buffer.UserTextBuffer;
-import de.abas.training.common.AbstractAjoAccess;
+import de.abas.training.advanced.common.AbstractAjoAccess;
 
 /**
  * This class shows how to call a FOP within an AJO program.
- * 
+ *
  * @author abas Software AG
  *
  */
@@ -24,8 +24,7 @@ public class AJOcallsFO extends AbstractAjoAccess {
 		// gets the U buffer
 		// BufferFactory.newInstance(false) => FO commands German
 		// BufferFactory.newInstance(true) => FO commands English
-		UserTextBuffer userTextBuffer =
-				BufferFactory.newInstance(false).getUserTextBuffer();
+		UserTextBuffer userTextBuffer = BufferFactory.newInstance(false).getUserTextBuffer();
 
 		// uses a method to initialize the variables
 		initializeUBufferVariables(userTextBuffer, "int", "xiNumber1");
@@ -66,7 +65,7 @@ public class AJOcallsFO extends AbstractAjoAccess {
 
 	/**
 	 * Initializes variables in U buffer.
-	 * 
+	 *
 	 * @param userTextBuffer The U buffer instance.
 	 * @param type The type of variable to initialize.
 	 * @param varname The name of the variable.
@@ -76,5 +75,5 @@ public class AJOcallsFO extends AbstractAjoAccess {
 			userTextBuffer.defineVar(type, varname);
 		}
 	}
-	
+
 }
