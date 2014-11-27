@@ -46,7 +46,7 @@ public class AJOcallsFO extends AbstractAjoAccess {
 		// .. Copyright : (c) 2014
 		// .. Function :
 		// ..*****************************************************************************
-		// Fop wird ausgeführt ...
+		// FOP is executed ...
 		// ..
 		// .type integer xiResult ? _F|defined(U|xiResult)
 		// .type integer xiNumber1 ? _F|defined(U|xiNumber1)
