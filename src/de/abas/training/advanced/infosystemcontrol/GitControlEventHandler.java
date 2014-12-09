@@ -332,10 +332,7 @@ public class GitControlEventHandler {
 	 */
 	private void createGitIgnore(DbContext ctx) throws IOException, EventException {
 		boolean newFileFlag = false;
-		newFileFlag = initializeGitIgnore(ctx, "*\n!.gitignore\n!fop.txt\n!/masken/\n!/java/\n!/screens/\n!/ow*/");
-		newFileFlag = initializeGitIgnore("masken/", "!**");
-		newFileFlag = initializeGitIgnore("java/", "!**\njava/jfopserver");
-		newFileFlag = initializeGitIgnore("screens/", "!**");
+		newFileFlag = initializeGitIgnore(ctx, "*\n!.gitignore\n!fop.txt\n!/masken/\n!masken/**\n!/java/\n!java/mandant.classpath\n!/java/projects/\n!java/projects/**\n!/screens/\n!screens/**\n!/ow*/\n!ow*/**");
 		if (newFileFlag) {
 			new TextBox(ctx, ".gitignore created", "The file .gitignore was created, as it did not already exist").show();
 		}
