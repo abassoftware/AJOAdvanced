@@ -5,7 +5,7 @@
 	<classpathentry kind="src" path="/Client"/>
 	<classpathentry kind="lib" path="lib/jdom-2.0.5.jar" sourcepath="lib/jdom-2.0.5-sources.jar">
 		<attributes>
-			<attribute name="javadoc_location" value="jar:platform:/resource/AJOTrainingAdvancedIndiv/lib/jdom-2.0.5-javadoc.jar!/"/>
+			<attribute name="javadoc_location" value="jar:platform:/resource/AJOAdvanced/lib/jdom-2.0.5-javadoc.jar!/"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="output" path="classes"/>
