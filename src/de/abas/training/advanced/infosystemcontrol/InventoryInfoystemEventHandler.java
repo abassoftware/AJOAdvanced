@@ -9,10 +9,13 @@ import de.abas.erp.axi2.EventHandlerRunner;
 import de.abas.erp.axi2.annotation.ButtonEventHandler;
 import de.abas.erp.axi2.annotation.EventHandler;
 import de.abas.erp.axi2.annotation.FieldEventHandler;
+import de.abas.erp.axi2.annotation.ScreenEventHandler;
 import de.abas.erp.axi2.event.ButtonEvent;
 import de.abas.erp.axi2.event.FieldEvent;
+import de.abas.erp.axi2.event.ScreenEvent;
 import de.abas.erp.axi2.type.ButtonEventType;
 import de.abas.erp.axi2.type.FieldEventType;
+import de.abas.erp.axi2.type.ScreenEventType;
 import de.abas.erp.common.type.AbasDate;
 import de.abas.erp.db.DbContext;
 import de.abas.erp.db.Query;
@@ -26,6 +29,8 @@ import de.abas.erp.db.selection.Selection;
 import de.abas.erp.db.settings.DisplayMode;
 import de.abas.erp.db.type.AbasUnit;
 import de.abas.erp.jfop.rt.api.annotation.RunFopWith;
+import de.abas.jfop.base.buffer.GlobalTextBuffer;
+import de.abas.jfop.base.buffer.internal.BufferFactoryImpl;
 
 /**
  * The InventoryInfosystemEventHandler handles all registered events for the infosystem INVENTORY.
@@ -54,6 +59,7 @@ public class InventoryInfoystemEventHandler {
 	@FieldEventHandler(field = "article", type = FieldEventType.EXIT)
 	public void articleExit(FieldEvent event, ScreenControl screenControl, DbContext ctx, InventoryInfoystem head) throws EventException {
 		head.setUnit(head.getArticle().getSU());
+		head.setDescr(head.getArticle().getDescr());
 	}
 
 	/**
@@ -86,6 +92,17 @@ public class InventoryInfoystemEventHandler {
 		// displays success message
 		TextBox textBox = new TextBox(ctx, "Committed", "Data is secured!");
 		textBox.show();
+	}
+
+	@ScreenEventHandler(type = ScreenEventType.ENTER)
+	public void screenEnter(ScreenEvent event, ScreenControl screenControl, DbContext ctx, InventoryInfoystem head) throws EventException {
+		BufferFactoryImpl bufferFactory = new BufferFactoryImpl(true);
+		GlobalTextBuffer globalTextBuffer = bufferFactory.getGlobalTextBuffer();
+		String currentOperator = globalTextBuffer.getStringValue("operatorCode");
+		if (!currentOperator.equals("jasc")) {
+			screenControl.setProtection(head, InventoryInfoystem.META.start, true);
+		}
+
 	}
 
 	/**
@@ -182,7 +199,8 @@ public class InventoryInfoystemEventHandler {
 			for (InventoryCounter inventoryCounter : createQuery) {
 
 				Product article = inventoryCounter.getYarticle();
-				AbasUnit warehouseUnit = inventoryCounter.getYwarehouseunit();
+
+				String warehouseUnit = inventoryCounter.getString(InventoryCounter.META.ywarehouseunit);
 				int team = inventoryCounter.getYteam();
 
 				BigDecimal purchPriceFromArticle = inventoryCounter.getYarticle().getPurchPrice();
@@ -196,7 +214,7 @@ public class InventoryInfoystemEventHandler {
 				appendRow.setDate(inventoryCounter.getYdate());
 				appendRow.setTteam(team);
 				appendRow.setTqty(quantity);
-				appendRow.setTunit(warehouseUnit.toString());
+				appendRow.setString(InventoryInfoystem.Row.META.tunit, warehouseUnit);
 				appendRow.setTarticledescr(purchDescrOperLang);
 				appendRow.setTpurchprice(purchPriceFromArticle);
 				appendRow.setTwarehousevalue(purchPriceFromArticle.multiply(quantity));
@@ -205,6 +223,7 @@ public class InventoryInfoystemEventHandler {
 				tmpWarehouseValue.add(tmpWarehouseValue);
 
 			}
+
 		}
 	}
 
