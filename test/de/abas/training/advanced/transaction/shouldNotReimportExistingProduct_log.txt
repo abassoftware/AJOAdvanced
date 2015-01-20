@@ -1,0 +1,3 @@
+Datensatz swd: TESTHEAD bereits vorhanden
+rollback
+Programm Ende
