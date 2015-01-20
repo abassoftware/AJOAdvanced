@@ -16,13 +16,19 @@ import de.abas.erp.axi.screen.ScreenControl;
 import de.abas.erp.axi2.EventHandlerRunner;
 import de.abas.erp.axi2.annotation.ButtonEventHandler;
 import de.abas.erp.axi2.annotation.EventHandler;
+import de.abas.erp.axi2.annotation.ScreenEventHandler;
 import de.abas.erp.axi2.event.ButtonEvent;
+import de.abas.erp.axi2.event.ScreenEvent;
 import de.abas.erp.axi2.type.ButtonEventType;
+import de.abas.erp.axi2.type.ScreenEventType;
 import de.abas.erp.common.type.enums.EnumDialogBox;
 import de.abas.erp.db.DbContext;
 import de.abas.erp.db.infosystem.custom.ow1.GitControl;
 import de.abas.erp.db.infosystem.custom.ow1.GitControl.Row;
 import de.abas.erp.jfop.rt.api.annotation.RunFopWith;
+import de.abas.jfop.base.buffer.GlobalTextBuffer;
+import de.abas.jfop.base.buffer.PrintBuffer;
+import de.abas.jfop.base.buffer.internal.BufferFactoryImpl;
 
 /**
  * Infosystem for usage of git commands in $MANDANDIR.
@@ -39,192 +45,6 @@ public class GitControlEventHandler {
 	private final String ICON_UNTRACKED = "icon:ball_red";
 
 	private ScreenControl screenControl = null;
-
-	/**
-	 * Start button after logic. Gets git status after pressing start button.
-	 *
-	 * @param event The event that occurred.
-	 * @param screenControl The ScreenControl instance.
-	 * @param ctx The database context.
-	 * @param head The GitControl instance.
-	 * @throws EventException Thrown if an error occurs.
-	 */
-	@ButtonEventHandler(field = "start", type = ButtonEventType.AFTER)
-	public void startAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
-		this.screenControl = screenControl;
-		getGitStatus(head);
-	}
-
-	/**
-	 * Button after logic of yadd. Executes git add for all selected files in table.
-	 *
-	 * @param event The event that occurred.
-	 * @param screenControl The ScreenControl instance.
-	 * @param ctx The database context.
-	 * @param head The GitControl instance.
-	 * @throws EventException Thrown if an error occurs.
-	 */
-	@ButtonEventHandler(field = "yadd", type = ButtonEventType.AFTER)
-	public void yaddAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
-		this.screenControl = screenControl;
-		final Iterable<Row> rows = head.table().getRows();
-		for (final Row row : rows) {
-			addFile(row);
-		}
-	}
-
-	/**
-	 * Button after logic of yaddall. Executes git add --all, which adds all modified files (but not the untracked ones).
-	 *
-	 * @param event The event that occurred.
-	 * @param screenControl The ScreenControl instance.
-	 * @param ctx The database context.
-	 * @param head The GitControl instance.
-	 * @throws EventException Thrown if an error occurs.
-	 */
-	@ButtonEventHandler(field = "yaddall", type = ButtonEventType.AFTER)
-	public void yaddallAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
-		this.screenControl = screenControl;
-		addAllFiles(head);
-	}
-
-	/**
-	 * Button after logic of ycheckall. Checks all ystaged checkboxes in table.
-	 *
-	 * @param event The event that occurred.
-	 * @param screenControl The ScreenControl instance.
-	 * @param ctx The database context.
-	 * @param head The GitControl instance.
-	 * @throws EventException Thrown if an error occurs.
-	 */
-	@ButtonEventHandler(field = "ycheckall", type = ButtonEventType.AFTER)
-	public void ycheckallAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
-		final Iterable<Row> rows = head.table().getRows();
-		for (final Row row : rows) {
-			row.setYstaged(true);
-		}
-	}
-
-	/**
-	 * Button after logic of ycommit. Commits staged changes, needing a commit message and user name and email of committer.
-	 *
-	 * @param event The event that occurred.
-	 * @param screenControl The ScreenControl instance.
-	 * @param ctx The database context.
-	 * @param head The GitControl instance.
-	 * @throws EventException Thrown if an error occurs.
-	 */
-	@ButtonEventHandler(field = "ycommit", type = ButtonEventType.AFTER)
-	public void ycommitAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
-		this.screenControl = screenControl;
-		final String commitMessage = getCommitMessage(head);
-		setUsername(ctx);
-		setEmail(ctx);
-		commitChanges(ctx, head, "git commit -m \"" + commitMessage + "\"", commitMessage);
-	}
-
-	/**
-	 * Button after logic of ycommitall. Automatically adds and commits all modified (already tracked) files, needing a commit message and user name and email of committer.
-	 *
-	 * @param event The event that occurred.
-	 * @param screenControl The ScreenControl instance.
-	 * @param ctx The database context.
-	 * @param head The GitControl instance.
-	 * @throws EventException Thrown if an error occurs.
-	 */
-	@ButtonEventHandler(field = "ycommitall", type = ButtonEventType.AFTER)
-	public void ycommitallAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
-		this.screenControl = screenControl;
-		final EnumDialogBox box =
-				new TextBox(ctx, "commiting all changes", "Are you sure you want to commit all changes in all files?\nThis does not include untracked files.").setButtons(
-						ButtonSet.YES_NO).show();
-		if (box.equals(EnumDialogBox.Yes)) {
-			final String commitMessage = getCommitMessage(head);
-			setUsername(ctx);
-			setEmail(ctx);
-			commitChanges(ctx, head, "git commit -a -m \"" + commitMessage + "\"", commitMessage);
-		}
-	}
-
-	/**
-	 * Button after logic of ygitignore. Creates .gitignore file if not already existent. Opens .gitignore file in editor.
-	 *
-	 * @param event The event that occurred.
-	 * @param screenControl The ScreenControl instance.
-	 * @param ctx The database context.
-	 * @param head The GitControl instance.
-	 * @throws EventException Thrown if an error occurs.
-	 */
-	@ButtonEventHandler(field = "ygitignore", type = ButtonEventType.AFTER)
-	public void ygitignoreAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
-		try {
-			createGitIgnore(ctx);
-			openGitIgnoreInEditor();
-		}
-		catch (final SecurityException e) {
-			throw new EventException("An error occurred while accessing .gitignore. Your user rights do not seem to be sufficient.");
-		}
-		catch (final IOException e) {
-			throw new EventException("An error occurred while editing .gitignore.");
-		}
-	}
-
-	/**
-	 * Button after logic of yinit. Executes git init.
-	 *
-	 * @param event The event that occurred.
-	 * @param screenControl The ScreenControl instance.
-	 * @param ctx The database context.
-	 * @param head The GitControl instance.
-	 * @throws EventException Thrown if an error occurs.
-	 */
-	@ButtonEventHandler(field = "yinit", type = ButtonEventType.AFTER)
-	public void yinitAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
-		BufferedReader bufferedReader = null;
-		try {
-			bufferedReader = runSystemCommand("cd $MANDANTDIR && git init");
-			final String console = getConsole(bufferedReader);
-			new TextBox(ctx, "git init", console).show();
-		}
-		catch (final IOException e) {
-			throw new EventException(e.getMessage());
-		}
-		finally {
-			closeBufferedReader(bufferedReader);
-		}
-	}
-
-	/**
-	 * Button after logic of ystatus. Gets git status.
-	 *
-	 * @param event The event that occurred.
-	 * @param screenControl The ScreenControl instance.
-	 * @param ctx The database context.
-	 * @param head The GitControl instance.
-	 * @throws EventException Thrown if an error occurs.
-	 */
-	@ButtonEventHandler(field = "ystatus", type = ButtonEventType.AFTER)
-	public void ystatusAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
-		this.screenControl = screenControl;
-		getGitStatus(head);
-	}
-
-	/**
-	 * Button after logic of yuncheckall. Unchecks all ystaged checkboxes in table.
-	 *
-	 * @param event The event that occurred.
-	 * @param screenControl The ScreenControl instance.
-	 * @param ctx The database context.
-	 * @param head The GitControl instance.
-	 * @throws EventException Thrown if an error occurs.
-	 */
-	@ButtonEventHandler(field = "yuncheckall", type = ButtonEventType.AFTER)
-	public void yuncheckallAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
-		final Iterable<Row> rows = head.table().getRows();
-		for (final Row row : rows) {
-			row.setYstaged(false);
-		}
-	}
 
 	/**
 	 * Executes git add --all and updates Infosystem table.
@@ -332,7 +152,9 @@ public class GitControlEventHandler {
 	 */
 	private void createGitIgnore(DbContext ctx) throws IOException, EventException {
 		boolean newFileFlag = false;
-		newFileFlag = initializeGitIgnore(ctx, "*\n!.gitignore\n!fop.txt\n!/masken/\n!masken/**\n!/java/\n!java/mandant.classpath\n!/java/projects/\n!java/projects/**\n!/screens/\n!screens/**\n!/ow*/\n!ow*/**");
+		newFileFlag =
+				initializeGitIgnore(ctx,
+						"*\n!.gitignore\n!fop.txt\n!/masken/\n!masken/**\n!/java/\n!java/mandant.classpath\n!/java/projects/\n!java/projects/**\n!/screens/\n!screens/**\n!/ow*/\n!ow*/**");
 		if (newFileFlag) {
 			new TextBox(ctx, ".gitignore created", "The file .gitignore was created, as it did not already exist").show();
 		}
@@ -500,6 +322,20 @@ public class GitControlEventHandler {
 		throw new IOException("Running system command " + command + " failed.");
 	}
 
+	@ScreenEventHandler(type = ScreenEventType.ENTER)
+	public void screenEnter(ScreenEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+		BufferFactoryImpl bufferFactoryImpl = new BufferFactoryImpl(false);
+		GlobalTextBuffer globalTextBuffer = bufferFactoryImpl.getGlobalTextBuffer();
+		String client = globalTextBuffer.getStringValue("mandant");
+		PrintBuffer printBuffer = bufferFactoryImpl.getPrintBuffer();
+		if (client.equals("jasc")) {
+			printBuffer.assign("maskkontextfop", "dev");
+		}
+		else if (client.equals("demo")) {
+			printBuffer.assign("maskkontextfop", "live");
+		}
+	}
+
 	/**
 	 * Checks whether email is valid using regex. Sets email for git.
 	 *
@@ -568,6 +404,21 @@ public class GitControlEventHandler {
 	}
 
 	/**
+	 * Start button after logic. Gets git status after pressing start button.
+	 *
+	 * @param event The event that occurred.
+	 * @param screenControl The ScreenControl instance.
+	 * @param ctx The database context.
+	 * @param head The GitControl instance.
+	 * @throws EventException Thrown if an error occurs.
+	 */
+	@ButtonEventHandler(field = "start", type = ButtonEventType.AFTER)
+	public void startAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+		this.screenControl = screenControl;
+		getGitStatus(head);
+	}
+
+	/**
 	 * Updates ystaged, protection and icon in current table row.
 	 *
 	 * @param row The current table row.
@@ -576,6 +427,217 @@ public class GitControlEventHandler {
 		row.setYstaged(false);
 		screenControl.setProtection(row, GitControl.Row.META.ystaged, true);
 		row.setYstateicon(ICON_STAGED);
+	}
+
+	/**
+	 * Button after logic of yadd. Executes git add for all selected files in table.
+	 *
+	 * @param event The event that occurred.
+	 * @param screenControl The ScreenControl instance.
+	 * @param ctx The database context.
+	 * @param head The GitControl instance.
+	 * @throws EventException Thrown if an error occurs.
+	 */
+	@ButtonEventHandler(field = "yadd", type = ButtonEventType.AFTER)
+	public void yaddAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+		this.screenControl = screenControl;
+		final Iterable<Row> rows = head.table().getRows();
+		for (final Row row : rows) {
+			addFile(row);
+		}
+	}
+
+	/**
+	 * Button after logic of yaddall. Executes git add --all, which adds all modified files (but not the untracked ones).
+	 *
+	 * @param event The event that occurred.
+	 * @param screenControl The ScreenControl instance.
+	 * @param ctx The database context.
+	 * @param head The GitControl instance.
+	 * @throws EventException Thrown if an error occurs.
+	 */
+	@ButtonEventHandler(field = "yaddall", type = ButtonEventType.AFTER)
+	public void yaddallAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+		this.screenControl = screenControl;
+		addAllFiles(head);
+	}
+
+	/**
+	 * Button after logic of ycheckall. Checks all ystaged checkboxes in table.
+	 *
+	 * @param event The event that occurred.
+	 * @param screenControl The ScreenControl instance.
+	 * @param ctx The database context.
+	 * @param head The GitControl instance.
+	 * @throws EventException Thrown if an error occurs.
+	 */
+	@ButtonEventHandler(field = "ycheckall", type = ButtonEventType.AFTER)
+	public void ycheckallAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+		final Iterable<Row> rows = head.table().getRows();
+		for (final Row row : rows) {
+			row.setYstaged(true);
+		}
+	}
+
+	/**
+	 * Button after logic of ycommit. Commits staged changes, needing a commit message and user name and email of committer.
+	 *
+	 * @param event The event that occurred.
+	 * @param screenControl The ScreenControl instance.
+	 * @param ctx The database context.
+	 * @param head The GitControl instance.
+	 * @throws EventException Thrown if an error occurs.
+	 */
+	@ButtonEventHandler(field = "ycommit", type = ButtonEventType.AFTER)
+	public void ycommitAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+		this.screenControl = screenControl;
+		final String commitMessage = getCommitMessage(head);
+		setUsername(ctx);
+		setEmail(ctx);
+		commitChanges(ctx, head, "git commit -m \"" + commitMessage + "\"", commitMessage);
+	}
+
+	/**
+	 * Button after logic of ycommitall. Automatically adds and commits all modified (already tracked) files, needing a commit message and user name and email of committer.
+	 *
+	 * @param event The event that occurred.
+	 * @param screenControl The ScreenControl instance.
+	 * @param ctx The database context.
+	 * @param head The GitControl instance.
+	 * @throws EventException Thrown if an error occurs.
+	 */
+	@ButtonEventHandler(field = "ycommitall", type = ButtonEventType.AFTER)
+	public void ycommitallAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+		this.screenControl = screenControl;
+		final EnumDialogBox box =
+				new TextBox(ctx, "commiting all changes", "Are you sure you want to commit all changes in all files?\nThis does not include untracked files.").setButtons(
+						ButtonSet.YES_NO).show();
+		if (box.equals(EnumDialogBox.Yes)) {
+			final String commitMessage = getCommitMessage(head);
+			setUsername(ctx);
+			setEmail(ctx);
+			commitChanges(ctx, head, "git commit -a -m \"" + commitMessage + "\"", commitMessage);
+		}
+	}
+
+	/**
+	 * Button after logic of ygitignore. Creates .gitignore file if not already existent. Opens .gitignore file in editor.
+	 *
+	 * @param event The event that occurred.
+	 * @param screenControl The ScreenControl instance.
+	 * @param ctx The database context.
+	 * @param head The GitControl instance.
+	 * @throws EventException Thrown if an error occurs.
+	 */
+	@ButtonEventHandler(field = "ygitignore", type = ButtonEventType.AFTER)
+	public void ygitignoreAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+		try {
+			createGitIgnore(ctx);
+			openGitIgnoreInEditor();
+		}
+		catch (final SecurityException e) {
+			throw new EventException("An error occurred while accessing .gitignore. Your user rights do not seem to be sufficient.");
+		}
+		catch (final IOException e) {
+			throw new EventException("An error occurred while editing .gitignore.");
+		}
+	}
+
+	/**
+	 * Button after logic of yinit. Executes git init.
+	 *
+	 * @param event The event that occurred.
+	 * @param screenControl The ScreenControl instance.
+	 * @param ctx The database context.
+	 * @param head The GitControl instance.
+	 * @throws EventException Thrown if an error occurs.
+	 */
+	@ButtonEventHandler(field = "yinit", type = ButtonEventType.AFTER)
+	public void yinitAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+		BufferedReader bufferedReader = null;
+		try {
+			bufferedReader = runSystemCommand("cd $MANDANTDIR && git init");
+			final String console = getConsole(bufferedReader);
+			new TextBox(ctx, "git init", console).show();
+		}
+		catch (final IOException e) {
+			throw new EventException(e.getMessage());
+		}
+		finally {
+			closeBufferedReader(bufferedReader);
+		}
+	}
+
+	@ButtonEventHandler(field = "ypull", type = ButtonEventType.AFTER)
+	public void ypullAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+		BufferedReader bufferedReader = null;
+		try {
+			bufferedReader = runSystemCommand("git pull origin master");
+			String console = getConsole(bufferedReader);
+			new TextBox(ctx, "Pulling from remote", console).show();
+		}
+		catch (IOException e) {
+			throw new EventException(e.getMessage());
+		}
+		finally {
+			closeBufferedReader(bufferedReader);
+		}
+	}
+
+	@ButtonEventHandler(field = "yshowlog", type = ButtonEventType.AFTER)
+	public void yshowlogAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+		head.table().clear();
+		BufferedReader bufferedReader = null;
+		try {
+			bufferedReader = runSystemCommand("cd /u1/jasc/erpjasc/;git log --pretty=oneline");
+			String line = "";
+			while ((line = bufferedReader.readLine()) != null) {
+				final Row row = head.table().appendRow();
+				String hash = line.split(" ")[0];
+				String message = line.substring(hash.length());
+				row.setYcommithash(hash);
+				row.setYlogmessage(message);
+			}
+
+		}
+		catch (IOException e) {
+			throw new EventException(e.getMessage());
+		}
+		finally {
+			closeBufferedReader(bufferedReader);
+		}
+	}
+
+	/**
+	 * Button after logic of ystatus. Gets git status.
+	 *
+	 * @param event The event that occurred.
+	 * @param screenControl The ScreenControl instance.
+	 * @param ctx The database context.
+	 * @param head The GitControl instance.
+	 * @throws EventException Thrown if an error occurs.
+	 */
+	@ButtonEventHandler(field = "ystatus", type = ButtonEventType.AFTER)
+	public void ystatusAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+		this.screenControl = screenControl;
+		getGitStatus(head);
+	}
+
+	/**
+	 * Button after logic of yuncheckall. Unchecks all ystaged checkboxes in table.
+	 *
+	 * @param event The event that occurred.
+	 * @param screenControl The ScreenControl instance.
+	 * @param ctx The database context.
+	 * @param head The GitControl instance.
+	 * @throws EventException Thrown if an error occurs.
+	 */
+	@ButtonEventHandler(field = "yuncheckall", type = ButtonEventType.AFTER)
+	public void yuncheckallAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+		final Iterable<Row> rows = head.table().getRows();
+		for (final Row row : rows) {
+			row.setYstaged(false);
+		}
 	}
 
 }
