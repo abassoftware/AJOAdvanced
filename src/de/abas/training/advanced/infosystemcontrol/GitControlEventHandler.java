@@ -574,8 +574,8 @@ public class GitControlEventHandler {
 		try {
 			bufferedReader = runSystemCommand("git pull origin master");
 			String console = getConsole(bufferedReader);
-			ctx.out().println(console);
-			// new TextBox(ctx, "Pulling from remote", console).show();
+			console = console.replace("'", "");
+			new TextBox(ctx, "Pulling from remote", console).show();
 		}
 		catch (IOException e) {
 			throw new EventException(e.getMessage());
