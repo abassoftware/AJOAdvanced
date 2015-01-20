@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<abasData>
+    <recordSet source="ajo" type="import">
+        <record swd="TESTHEAD" descrOperLang="Test product">
+            <header>
+                <field name="swd">TESTHEAD</field>
+                <field name="descrOperLang">Test product</field>
+                <field name="salesprice">199.99</field>
+            </header>
+            <row>
+                <field name="productListElem">TESTROW</field>
+                <field name="elemQty">1</field>
+            </row>
+        </record>
+    </recordSet>
+</abasData>

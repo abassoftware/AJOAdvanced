@@ -574,7 +574,8 @@ public class GitControlEventHandler {
 		try {
 			bufferedReader = runSystemCommand("git pull origin master");
 			String console = getConsole(bufferedReader);
-			new TextBox(ctx, "Pulling from remote", console).show();
+			ctx.out().println(console);
+			// new TextBox(ctx, "Pulling from remote", console).show();
 		}
 		catch (IOException e) {
 			throw new EventException(e.getMessage());
@@ -589,7 +590,7 @@ public class GitControlEventHandler {
 		head.table().clear();
 		BufferedReader bufferedReader = null;
 		try {
-			bufferedReader = runSystemCommand("cd /u1/jasc/erpjasc/;git log --pretty=oneline");
+			bufferedReader = runSystemCommand("git log --pretty=oneline");
 			String line = "";
 			while ((line = bufferedReader.readLine()) != null) {
 				final Row row = head.table().appendRow();
