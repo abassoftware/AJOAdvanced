@@ -17,46 +17,58 @@ import de.abas.training.advanced.common.AbstractAjoAccess;
  *
  */
 public class RowSelectionBuilderProducts extends AbstractAjoAccess {
+	
+	public static void main(String[] args) {
+		new RowSelectionBuilderProducts().runClientProgram(args);
+	}
+
+	/**
+	 * Selects first product with the specified search word.
+	 *
+	 * @param swd The search word.
+	 * @return Returns the product as instance of SelectableObject.
+	 */
+	private SelectableObject getSelectedProduct(String swd) {
+		SelectionBuilder<Product> selectionBuilder =
+				SelectionBuilder.create(Product.class);
+		selectionBuilder.add(Conditions.eq(Product.META.swd, swd));
+		Product product =
+				QueryUtil.getFirst(getDbContext(), selectionBuilder.build());
+		return product;
+	}
 
 	@Override
 	public void run(String[] args) {
-		RowSelectionBuilder<Product, Row> rowSelectionBuilder = RowSelectionBuilder.create(Product.class, Row.class);
+		RowSelectionBuilder<Product, Row> rowSelectionBuilder =
+				RowSelectionBuilder.create(Product.class, Row.class);
 
 		// row selection criteria
 		// Caution: The method getSelectedProduct can also return null
-		rowSelectionBuilder.add(Conditions.eq(Row.META.productListElem, getSelectedProduct("NN10021")));
+		rowSelectionBuilder.add(Conditions.eq(Row.META.productListElem,
+				getSelectedProduct("NN10021")));
 
 		// head selection criteria
-		rowSelectionBuilder.addForHead(Conditions.between(Product.META.idno, "30010", "30015"));
+		rowSelectionBuilder.addForHead(Conditions.between(Product.META.idno,
+				"30010", "30015"));
 
-		RowQuery<Product, Row> rowQueryProduct = getDbContext().createQuery(rowSelectionBuilder.build());
+		RowQuery<Product, Row> rowQueryProduct =
+				getDbContext().createQuery(rowSelectionBuilder.build());
 
 		// displays query result
 		if (rowQueryProduct != null) {
 			getDbContext().out().println("Query-Object: " + rowQueryProduct);
 			for (Row row : rowQueryProduct) {
-				getDbContext().out().println(row.header().getIdno() + " - " + row.header().getSwd());
-				getDbContext().out().println("--" + row.getProductListElem().getIdno() + " -- " + row.getProductListElem().getSwd());
+				getDbContext().out().println(
+						row.header().getIdno() + " - " + row.header().getSwd());
+				getDbContext().out().println(
+						"--" + row.getProductListElem().getIdno() + " -- "
+								+ row.getProductListElem().getSwd());
 			}
 		}
 		else {
 			getDbContext().out().println("Query-Object: null");
 		}
 
-	}
-
-	/**
-	 * Selects first product with the specified search word.
-	 *
-	 * @param swd
-	 * The search word.
-	 * @return Returns the product as instance of SelectableObject.
-	 */
-	private SelectableObject getSelectedProduct(String swd) {
-		SelectionBuilder<Product> selectionBuilder = SelectionBuilder.create(Product.class);
-		selectionBuilder.add(Conditions.eq(Product.META.swd, swd));
-		Product product = QueryUtil.getFirst(getDbContext(), selectionBuilder.build());
-		return product;
 	}
 
 }

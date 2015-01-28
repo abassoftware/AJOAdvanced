@@ -89,13 +89,15 @@ public class GitControlEventHandler {
 	 * @param bufferedReader The BufferedReader instance.
 	 * @throws EventException Thrown if an error occurs.
 	 */
-	private void closeBufferedReader(BufferedReader bufferedReader) throws EventException {
+	private void closeBufferedReader(BufferedReader bufferedReader)
+			throws EventException {
 		if (bufferedReader != null) {
 			try {
 				bufferedReader.close();
 			}
 			catch (final IOException e) {
-				throw new EventException("An error occurred while trying to close BufferedReader instance.");
+				throw new EventException(
+						"An error occurred while trying to close BufferedReader instance.");
 			}
 		}
 	}
@@ -106,19 +108,22 @@ public class GitControlEventHandler {
 	 * @param bufferedWriter The BufferedWriter instance.
 	 * @throws EventException Thrown if an error occurs.
 	 */
-	private void closeBufferedWriter(BufferedWriter bufferedWriter) throws EventException {
+	private void closeBufferedWriter(BufferedWriter bufferedWriter)
+			throws EventException {
 		if (bufferedWriter != null) {
 			try {
 				bufferedWriter.close();
 			}
 			catch (final IOException e) {
-				throw new EventException("An error occurred while trying to close BufferedWriter instance.");
+				throw new EventException(
+						"An error occurred while trying to close BufferedWriter instance.");
 			}
 		}
 	}
 
 	/**
-	 * Executes command, gets git status, resets commit message and displays text box.
+	 * Executes command, gets git status, resets commit message and displays text
+	 * box.
 	 *
 	 * @param ctx The database context.
 	 * @param head The GitControl instance.
@@ -126,7 +131,8 @@ public class GitControlEventHandler {
 	 * @param commitMessage The commit message.
 	 * @throws EventException Thrown if an error occurs.
 	 */
-	private void commitChanges(DbContext ctx, GitControl head, String command, String commitMessage) throws EventException {
+	private void commitChanges(DbContext ctx, GitControl head, String command,
+			String commitMessage) throws EventException {
 		BufferedReader bufferedReader = null;
 		try {
 			bufferedReader = runSystemCommand(command);
@@ -144,24 +150,30 @@ public class GitControlEventHandler {
 	}
 
 	/**
-	 * Creates .gitignore if .gitignore does not exist and initializes it with default values..
+	 * Creates .gitignore if .gitignore does not exist and initializes it with
+	 * default values..
 	 *
 	 * @param ctx The database context.
-	 * @throws IOException Exception thrown if something went wrong with the BufferedWriter.
+	 * @throws IOException Exception thrown if something went wrong with the
+	 * BufferedWriter.
 	 * @throws EventException Exception thrown if an error occurs.
 	 */
 	private void createGitIgnore(DbContext ctx) throws IOException, EventException {
 		boolean newFileFlag = false;
 		newFileFlag =
-				initializeGitIgnore(ctx,
+				initializeGitIgnore(
+						ctx,
 						"*\n!.gitignore\n!fop.txt\n!/masken/\n!masken/**\n!/java/\n!java/mandant.classpath\n!/java/projects/\n!java/projects/**\n!/screens/\n!screens/**\n!/ow*/\n!ow*/**");
 		if (newFileFlag) {
-			new TextBox(ctx, ".gitignore created", "The file .gitignore was created, as it did not already exist").show();
+			new TextBox(ctx, ".gitignore created",
+					"The file .gitignore was created, as it did not already exist")
+					.show();
 		}
 	}
 
 	/**
-	 * Gets the commit message. If the commit message is empty, the cursor is moved to field ycommitmessage and an error message is displayed.
+	 * Gets the commit message. If the commit message is empty, the cursor is moved
+	 * to field ycommitmessage and an error message is displayed.
 	 *
 	 * @param head The GitControl instance.
 	 * @return The commit message.
@@ -194,7 +206,8 @@ public class GitControlEventHandler {
 	}
 
 	/**
-	 * Gets staged, modified and untracked files and sets icon and screen protection accordingly.
+	 * Gets staged, modified and untracked files and sets icon and screen protection
+	 * accordingly.
 	 *
 	 * @param head The GitControl instance.
 	 * @param command The command to execute.
@@ -202,7 +215,8 @@ public class GitControlEventHandler {
 	 * @param icon The icon to set.
 	 * @throws EventException Thrown if an error occurs.
 	 */
-	private void getFiles(GitControl head, String command, boolean isStaged, String icon) throws EventException {
+	private void getFiles(GitControl head, String command, boolean isStaged,
+			String icon) throws EventException {
 		BufferedReader bufferedReader = null;
 		try {
 			bufferedReader = runSystemCommand(command);
@@ -224,20 +238,24 @@ public class GitControlEventHandler {
 	 */
 	private void getGitStatus(GitControl head) throws EventException {
 		head.table().clear();
-		getFiles(head, "git ls-files --others --exclude-standard", false, ICON_UNTRACKED);
+		getFiles(head, "git ls-files --others --exclude-standard", false,
+				ICON_UNTRACKED);
 		getFiles(head, "git ls-files -m", false, ICON_MODIFIED);
 		getFiles(head, "git diff --name-only --staged", true, ICON_STAGED);
 	}
 
 	/**
-	 * Overrides initializeGitIgnore(String path, String fileContent) for path being the current directory.
+	 * Overrides initializeGitIgnore(String path, String fileContent) for path being
+	 * the current directory.
 	 *
 	 * @param fileContent The content of .gitignore file.
 	 * @return Whether or not new .gitignore file was created.
 	 * @throws EventException Thrown if an error occurs.
-	 * @throws IOException Thrown if something went from with the BufferdWriter instance.
+	 * @throws IOException Thrown if something went from with the BufferdWriter
+	 * instance.
 	 */
-	private boolean initializeGitIgnore(DbContext ctx, String fileContent) throws EventException, IOException {
+	private boolean initializeGitIgnore(DbContext ctx, String fileContent)
+			throws EventException, IOException {
 		return initializeGitIgnore("", fileContent);
 	}
 
@@ -248,9 +266,11 @@ public class GitControlEventHandler {
 	 * @param fileContent The content of .gitignore file.
 	 * @return Whether or not new .gitignore file was created.
 	 * @throws EventException Thrown if an error occurs.
-	 * @throws IOException Thrown if something went from with the BufferdWriter instance.
+	 * @throws IOException Thrown if something went from with the BufferdWriter
+	 * instance.
 	 */
-	private boolean initializeGitIgnore(String path, String fileContent) throws IOException, EventException {
+	private boolean initializeGitIgnore(String path, String fileContent)
+			throws IOException, EventException {
 		BufferedWriter bufferedWriter = null;
 		boolean newFileFlag = false;
 		try {
@@ -280,7 +300,8 @@ public class GitControlEventHandler {
 	 * @param bufferedReader The BufferedReader instance.
 	 * @throws IOException Thrown if an error occurs.
 	 */
-	private void loadInfosystemTable(GitControl head, boolean isStaged, String icon, BufferedReader bufferedReader) throws IOException {
+	private void loadInfosystemTable(GitControl head, boolean isStaged, String icon,
+			BufferedReader bufferedReader) throws IOException {
 		String line = "";
 		while ((line = bufferedReader.readLine()) != null) {
 			final Row row = head.table().appendRow();
@@ -323,7 +344,8 @@ public class GitControlEventHandler {
 	}
 
 	@ScreenEventHandler(type = ScreenEventType.ENTER)
-	public void screenEnter(ScreenEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+	public void screenEnter(ScreenEvent event, ScreenControl screenControl,
+			DbContext ctx, GitControl head) throws EventException {
 		BufferFactoryImpl bufferFactoryImpl = new BufferFactoryImpl(false);
 		GlobalTextBuffer globalTextBuffer = bufferFactoryImpl.getGlobalTextBuffer();
 		String client = globalTextBuffer.getStringValue("mandant");
@@ -345,7 +367,9 @@ public class GitControlEventHandler {
 	private void setEmail(DbContext ctx) throws EventException {
 		String email = FO.lesen(new String[] { "Please enter your email address:" });
 		while (!email.matches("^[A-Za-z0-9\\.\\-_]+@[A-Za-z0-9\\.\\-_]+\\.[a-z]+$")) {
-			new TextBox(ctx, "Invalid email address", "Please enter a valid email address:\n e.g.: john.doe@domain.locale").show();
+			new TextBox(ctx, "Invalid email address",
+					"Please enter a valid email address:\n e.g.: john.doe@domain.locale")
+					.show();
 			email = FO.lesen(new String[] { "Please enter your email address:" });
 		}
 		try {
@@ -376,8 +400,13 @@ public class GitControlEventHandler {
 	 */
 	private void setUsername(DbContext ctx) throws EventException {
 		String username = FO.lesen(new String[] { "Please enter your name:" });
-		while (!username.matches("^[A-ZÄÖÜ][a-zäöüß]+[ ][A-ZÄÖÜa-zäöüß ]*[A-ZÄÖÜ][a-zäöüß]+$")) {
-			new TextBox(ctx, "Invalid name", "Your name needs to consist of your first and last name and it is case sensitive:\n e.g.: John Doe").show();
+		while (!username
+				.matches("^[A-ZÄÖÜ][a-zäöüß]+[ ][A-ZÄÖÜa-zäöüß ]*[A-ZÄÖÜ][a-zäöüß]+$")) {
+			new TextBox(
+					ctx,
+					"Invalid name",
+					"Your name needs to consist of your first and last name and it is case sensitive:\n e.g.: John Doe")
+					.show();
 			username = FO.lesen(new String[] { "Please enter your name:" });
 		}
 		try {
@@ -413,7 +442,8 @@ public class GitControlEventHandler {
 	 * @throws EventException Thrown if an error occurs.
 	 */
 	@ButtonEventHandler(field = "start", type = ButtonEventType.AFTER)
-	public void startAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+	public void startAfter(ButtonEvent event, ScreenControl screenControl,
+			DbContext ctx, GitControl head) throws EventException {
 		this.screenControl = screenControl;
 		getGitStatus(head);
 	}
@@ -439,7 +469,8 @@ public class GitControlEventHandler {
 	 * @throws EventException Thrown if an error occurs.
 	 */
 	@ButtonEventHandler(field = "yadd", type = ButtonEventType.AFTER)
-	public void yaddAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+	public void yaddAfter(ButtonEvent event, ScreenControl screenControl,
+			DbContext ctx, GitControl head) throws EventException {
 		this.screenControl = screenControl;
 		final Iterable<Row> rows = head.table().getRows();
 		for (final Row row : rows) {
@@ -448,7 +479,8 @@ public class GitControlEventHandler {
 	}
 
 	/**
-	 * Button after logic of yaddall. Executes git add --all, which adds all modified files (but not the untracked ones).
+	 * Button after logic of yaddall. Executes git add --all, which adds all modified
+	 * files (but not the untracked ones).
 	 *
 	 * @param event The event that occurred.
 	 * @param screenControl The ScreenControl instance.
@@ -457,7 +489,8 @@ public class GitControlEventHandler {
 	 * @throws EventException Thrown if an error occurs.
 	 */
 	@ButtonEventHandler(field = "yaddall", type = ButtonEventType.AFTER)
-	public void yaddallAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+	public void yaddallAfter(ButtonEvent event, ScreenControl screenControl,
+			DbContext ctx, GitControl head) throws EventException {
 		this.screenControl = screenControl;
 		addAllFiles(head);
 	}
@@ -472,7 +505,8 @@ public class GitControlEventHandler {
 	 * @throws EventException Thrown if an error occurs.
 	 */
 	@ButtonEventHandler(field = "ycheckall", type = ButtonEventType.AFTER)
-	public void ycheckallAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+	public void ycheckallAfter(ButtonEvent event, ScreenControl screenControl,
+			DbContext ctx, GitControl head) throws EventException {
 		final Iterable<Row> rows = head.table().getRows();
 		for (final Row row : rows) {
 			row.setYstaged(true);
@@ -480,7 +514,8 @@ public class GitControlEventHandler {
 	}
 
 	/**
-	 * Button after logic of ycommit. Commits staged changes, needing a commit message and user name and email of committer.
+	 * Button after logic of ycommit. Commits staged changes, needing a commit
+	 * message and user name and email of committer.
 	 *
 	 * @param event The event that occurred.
 	 * @param screenControl The ScreenControl instance.
@@ -489,16 +524,20 @@ public class GitControlEventHandler {
 	 * @throws EventException Thrown if an error occurs.
 	 */
 	@ButtonEventHandler(field = "ycommit", type = ButtonEventType.AFTER)
-	public void ycommitAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+	public void ycommitAfter(ButtonEvent event, ScreenControl screenControl,
+			DbContext ctx, GitControl head) throws EventException {
 		this.screenControl = screenControl;
 		final String commitMessage = getCommitMessage(head);
 		setUsername(ctx);
 		setEmail(ctx);
-		commitChanges(ctx, head, "git commit -m \"" + commitMessage + "\"", commitMessage);
+		commitChanges(ctx, head, "git commit -m \"" + commitMessage + "\"",
+				commitMessage);
 	}
 
 	/**
-	 * Button after logic of ycommitall. Automatically adds and commits all modified (already tracked) files, needing a commit message and user name and email of committer.
+	 * Button after logic of ycommitall. Automatically adds and commits all modified
+	 * (already tracked) files, needing a commit message and user name and email of
+	 * committer.
 	 *
 	 * @param event The event that occurred.
 	 * @param screenControl The ScreenControl instance.
@@ -507,21 +546,27 @@ public class GitControlEventHandler {
 	 * @throws EventException Thrown if an error occurs.
 	 */
 	@ButtonEventHandler(field = "ycommitall", type = ButtonEventType.AFTER)
-	public void ycommitallAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+	public void ycommitallAfter(ButtonEvent event, ScreenControl screenControl,
+			DbContext ctx, GitControl head) throws EventException {
 		this.screenControl = screenControl;
 		final EnumDialogBox box =
-				new TextBox(ctx, "commiting all changes", "Are you sure you want to commit all changes in all files?\nThis does not include untracked files.").setButtons(
-						ButtonSet.YES_NO).show();
+				new TextBox(
+						ctx,
+						"commiting all changes",
+						"Are you sure you want to commit all changes in all files?\nThis does not include untracked files.")
+						.setButtons(ButtonSet.YES_NO).show();
 		if (box.equals(EnumDialogBox.Yes)) {
 			final String commitMessage = getCommitMessage(head);
 			setUsername(ctx);
 			setEmail(ctx);
-			commitChanges(ctx, head, "git commit -a -m \"" + commitMessage + "\"", commitMessage);
+			commitChanges(ctx, head, "git commit -a -m \"" + commitMessage + "\"",
+					commitMessage);
 		}
 	}
 
 	/**
-	 * Button after logic of ygitignore. Creates .gitignore file if not already existent. Opens .gitignore file in editor.
+	 * Button after logic of ygitignore. Creates .gitignore file if not already
+	 * existent. Opens .gitignore file in editor.
 	 *
 	 * @param event The event that occurred.
 	 * @param screenControl The ScreenControl instance.
@@ -530,13 +575,15 @@ public class GitControlEventHandler {
 	 * @throws EventException Thrown if an error occurs.
 	 */
 	@ButtonEventHandler(field = "ygitignore", type = ButtonEventType.AFTER)
-	public void ygitignoreAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+	public void ygitignoreAfter(ButtonEvent event, ScreenControl screenControl,
+			DbContext ctx, GitControl head) throws EventException {
 		try {
 			createGitIgnore(ctx);
 			openGitIgnoreInEditor();
 		}
 		catch (final SecurityException e) {
-			throw new EventException("An error occurred while accessing .gitignore. Your user rights do not seem to be sufficient.");
+			throw new EventException(
+					"An error occurred while accessing .gitignore. Your user rights do not seem to be sufficient.");
 		}
 		catch (final IOException e) {
 			throw new EventException("An error occurred while editing .gitignore.");
@@ -553,7 +600,8 @@ public class GitControlEventHandler {
 	 * @throws EventException Thrown if an error occurs.
 	 */
 	@ButtonEventHandler(field = "yinit", type = ButtonEventType.AFTER)
-	public void yinitAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+	public void yinitAfter(ButtonEvent event, ScreenControl screenControl,
+			DbContext ctx, GitControl head) throws EventException {
 		BufferedReader bufferedReader = null;
 		try {
 			bufferedReader = runSystemCommand("cd $MANDANTDIR && git init");
@@ -569,7 +617,8 @@ public class GitControlEventHandler {
 	}
 
 	@ButtonEventHandler(field = "ypull", type = ButtonEventType.AFTER)
-	public void ypullAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+	public void ypullAfter(ButtonEvent event, ScreenControl screenControl,
+			DbContext ctx, GitControl head) throws EventException {
 		BufferedReader bufferedReader = null;
 		try {
 			bufferedReader = runSystemCommand("git pull origin master");
@@ -586,7 +635,8 @@ public class GitControlEventHandler {
 	}
 
 	@ButtonEventHandler(field = "yshowlog", type = ButtonEventType.AFTER)
-	public void yshowlogAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+	public void yshowlogAfter(ButtonEvent event, ScreenControl screenControl,
+			DbContext ctx, GitControl head) throws EventException {
 		head.table().clear();
 		BufferedReader bufferedReader = null;
 		try {
@@ -619,7 +669,8 @@ public class GitControlEventHandler {
 	 * @throws EventException Thrown if an error occurs.
 	 */
 	@ButtonEventHandler(field = "ystatus", type = ButtonEventType.AFTER)
-	public void ystatusAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+	public void ystatusAfter(ButtonEvent event, ScreenControl screenControl,
+			DbContext ctx, GitControl head) throws EventException {
 		this.screenControl = screenControl;
 		getGitStatus(head);
 	}
@@ -634,7 +685,8 @@ public class GitControlEventHandler {
 	 * @throws EventException Thrown if an error occurs.
 	 */
 	@ButtonEventHandler(field = "yuncheckall", type = ButtonEventType.AFTER)
-	public void yuncheckallAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, GitControl head) throws EventException {
+	public void yuncheckallAfter(ButtonEvent event, ScreenControl screenControl,
+			DbContext ctx, GitControl head) throws EventException {
 		final Iterable<Row> rows = head.table().getRows();
 		for (final Row row : rows) {
 			row.setYstaged(false);

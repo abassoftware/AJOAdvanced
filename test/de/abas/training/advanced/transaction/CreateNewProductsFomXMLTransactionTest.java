@@ -34,19 +34,17 @@ public class CreateNewProductsFomXMLTransactionTest {
 	}
 
 	/**
-	 * Creates a client context with the standard port and predefined application name.
+	 * Creates a client context with the standard port and predefined application
+	 * name.
 	 *
 	 * @param host The host name.
 	 * @param client The client name.
 	 * @param password The password.
 	 */
-	/**
-	 * @param host
-	 * @param client
-	 * @param password
-	 */
 	private void createClientContext(String host, String client, String password) {
-		ctx = ContextHelper.createClientContext(host, 6550, client, password, "Test on " + client + "@" + host);
+		ctx =
+				ContextHelper.createClientContext(host, 6550, client, password,
+						"Test on " + client + "@" + host);
 	}
 
 	/**
@@ -55,7 +53,8 @@ public class CreateNewProductsFomXMLTransactionTest {
 	 * @param swd The search word prefix.
 	 */
 	private void deleteProducts(String swd) {
-		SelectionBuilder<Product> selectionBuilder = SelectionBuilder.create(Product.class);
+		SelectionBuilder<Product> selectionBuilder =
+				SelectionBuilder.create(Product.class);
 		selectionBuilder.add(Conditions.starts(Product.META.swd, swd));
 		List<Product> products = ctx.createQuery(selectionBuilder.build()).execute();
 		for (Product product : products) {
@@ -69,14 +68,16 @@ public class CreateNewProductsFomXMLTransactionTest {
 	 * @return The log file as instance of File.
 	 */
 	private String getLogFileName() {
-		return new File("test/de/abas/training/advanced/transaction/" + testName.getMethodName() + "_log.txt").getAbsolutePath();
+		return new File("test/de/abas/training/advanced/transaction/"
+				+ testName.getMethodName() + "_log.txt").getAbsolutePath();
 	}
 
 	@Test
 	public void importOneProduct() {
 		String input = "test/de/abas/training/advanced/transaction/example1.xml";
 		instance.run(ctx, new String[] { "", input, getLogFileName() });
-		SelectionBuilder<Product> selectionBuilder = SelectionBuilder.create(Product.class);
+		SelectionBuilder<Product> selectionBuilder =
+				SelectionBuilder.create(Product.class);
 		selectionBuilder.add(Conditions.eq(Product.META.swd, "TESTHEAD"));
 		List<Product> products = ctx.createQuery(selectionBuilder.build()).execute();
 		assertEquals("count of products with swd TESTHEAD", 1, products.size());
@@ -90,13 +91,15 @@ public class CreateNewProductsFomXMLTransactionTest {
 		rowProduct.commit();
 		instance.run(ctx, new String[] { "", input, getLogFileName() });
 
-		SelectionBuilder<Product> selectionBuilder = SelectionBuilder.create(Product.class);
+		SelectionBuilder<Product> selectionBuilder =
+				SelectionBuilder.create(Product.class);
 		selectionBuilder.add(Conditions.eq(Product.META.swd, "TESTHEAD"));
 		List<Product> products = ctx.createQuery(selectionBuilder.build()).execute();
 		assertEquals("count of products with swd TESTHEAD", 1, products.size());
 		Product product = products.get(0);
 		assertEquals("product has 1 row", 1, product.table().getRowCount());
-		assertEquals("product row contains product TESTROW", "TESTROW", product.table().getRow(1).getProductListElem().getSwd());
+		assertEquals("product row contains product TESTROW", "TESTROW", product
+				.table().getRow(1).getProductListElem().getSwd());
 	}
 
 	@Before
@@ -114,11 +117,13 @@ public class CreateNewProductsFomXMLTransactionTest {
 		productEditor.setDescrOperLang("Test product for doublet check");
 		productEditor.commit();
 		instance.run(ctx, new String[] { "", input, getLogFileName() });
-		SelectionBuilder<Product> selectionBuilder = SelectionBuilder.create(Product.class);
+		SelectionBuilder<Product> selectionBuilder =
+				SelectionBuilder.create(Product.class);
 		selectionBuilder.add(Conditions.eq(Product.META.swd, "TESTHEAD"));
 		List<Product> products = ctx.createQuery(selectionBuilder.build()).execute();
 		assertEquals("count of products with swd TESTHEAD", 1, products.size());
-		assertEquals("the product should have its original value in descrOperLang", "Test product for doublet check", products.get(0).getDescrOperLang());
+		assertEquals("the product should have its original value in descrOperLang",
+				"Test product for doublet check", products.get(0).getDescrOperLang());
 	}
 
 }
