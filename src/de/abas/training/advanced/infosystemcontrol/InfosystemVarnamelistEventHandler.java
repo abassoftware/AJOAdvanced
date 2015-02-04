@@ -8,7 +8,7 @@ import de.abas.erp.axi2.annotation.EventHandler;
 import de.abas.erp.axi2.event.ButtonEvent;
 import de.abas.erp.axi2.type.ButtonEventType;
 import de.abas.erp.db.DbContext;
-import de.abas.erp.db.infosystem.custom.ow1.InfosystemVARNAMELIST;
+import de.abas.erp.db.infosystem.custom.ow1.ControlVarnameList;
 import de.abas.erp.db.schema.company.Vartab;
 import de.abas.erp.db.schema.company.Vartab.Row;
 import de.abas.erp.jfop.rt.api.annotation.RunFopWith;
@@ -17,22 +17,22 @@ import de.abas.erp.jfop.rt.api.annotation.RunFopWith;
  * The InfosystemVarnamelistEventHandler handles all registered events for the
  * infosystem VARNAMELIST.
  *
- * The infosystem VARNAMELIST displays all German variable names and their
- * according English names of the variable table entered as filter criterion in
- * the head of the infosystem.
+ * The infosystem VARNAMELIST displays all German variable names and their according
+ * English names of the variable table entered as filter criterion in the head of the
+ * infosystem.
  *
  * @author abas Software AG
  *
  */
-@EventHandler(head = InfosystemVARNAMELIST.class, row = InfosystemVARNAMELIST.Row.class)
+@EventHandler(head = ControlVarnameList.class, row = ControlVarnameList.Row.class)
 @RunFopWith(EventHandlerRunner.class)
 public class InfosystemVarnamelistEventHandler {
 
 	/**
-	 * If the start button of the infosystem VARNAMELIST is pressed, after
-	 * checking a variable table was selected as basis for the selection, the
-	 * German and English variable names of all variables of this variable table
-	 * are loaded as table rows.
+	 * If the start button of the infosystem VARNAMELIST is pressed, after checking a
+	 * variable table was selected as basis for the selection, the German and English
+	 * variable names of all variables of this variable table are loaded as table
+	 * rows.
 	 *
 	 * @param event The event that occurred.
 	 * @param screenControl The ScreenControl instance
@@ -41,7 +41,8 @@ public class InfosystemVarnamelistEventHandler {
 	 * @throws EventException The exception thrown if an error occurs.
 	 */
 	@ButtonEventHandler(field = "start", type = ButtonEventType.AFTER)
-	public void startAfter(ButtonEvent event, ScreenControl screenControl, DbContext ctx, InfosystemVARNAMELIST head) throws EventException {
+	public void startAfter(ButtonEvent event, ScreenControl screenControl,
+			DbContext ctx, ControlVarnameList head) throws EventException {
 		// gets the variable table that was entered as the filter criterion
 		Vartab vartab = head.getYvartab();
 		// only tries to load all variables if a variable table was entered as
@@ -54,7 +55,8 @@ public class InfosystemVarnamelistEventHandler {
 			// creates a infosystem table row for each table row of the variable
 			// table containing the German and English variable name
 			for (Row row : rows) {
-				de.abas.erp.db.infosystem.custom.ow1.InfosystemVARNAMELIST.Row appendRow = head.table().appendRow();
+				de.abas.erp.db.infosystem.custom.ow1.ControlVarnameList.Row appendRow =
+						head.table().appendRow();
 				appendRow.setTyengname(row.getVarNameEnglish());
 				appendRow.setTygername(row.getVarName());
 			}
