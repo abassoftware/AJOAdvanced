@@ -1,6 +1,0 @@
-header-Field: swd -> TESTHEAD
-header-Field: descrOperLang -> Test product
-header-Field: salesprice -> 199.99
-TESTHEAD - 10637 wurde angelegt
-commit
-Programm Ende
