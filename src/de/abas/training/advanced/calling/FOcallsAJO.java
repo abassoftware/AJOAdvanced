@@ -3,7 +3,6 @@ package de.abas.training.advanced.calling;
 import de.abas.eks.jfop.FOPException;
 import de.abas.eks.jfop.remote.ContextRunnable;
 import de.abas.eks.jfop.remote.FOPSessionContext;
-import de.abas.erp.db.DbContext;
 import de.abas.jfop.base.buffer.BufferFactory;
 import de.abas.jfop.base.buffer.UserTextBuffer;
 
@@ -13,7 +12,7 @@ import de.abas.jfop.base.buffer.UserTextBuffer;
  *
  * ..!interpreter english translate noabbrev
  * ..*****************************************************************************
- * .. FOP-Name : FOP.CALLS.JFOP.ARGUMENTS.STATUS
+ * .. FOP-Name : FOP.CALLS.AJO.TO.CHECK.INPUT.STRING
  * .. Date : 20.10.2014
  * .. Author : abas Software AG
  * .. Responsible :
@@ -23,28 +22,23 @@ import de.abas.jfop.base.buffer.UserTextBuffer;
  * ..*****************************************************************************
  * ..
  * .. variable definition --------------------------------------------------------
- * .type int xiNo1 ? F|defined(U|xiZahl1) = G|false
- * .type int xiNo2 ? F|defined(U|xiZahl2) = G|false
- * .type int xiResult ? F|defined(U|xiResult) = G|false
+ * .type text xtinput
+ * .type text xtmessage
  * .. ----------------------------------------------------------------------------
- * .. initialize variables
- * .formula U|xiNo1 = 2
- * .formula U|xiNo2 = 10
- * .. initialize xiResult --------------------------------------------------------
- * .formula U|xiResult = 9999
- * ..
  * .set debug +
  * .. All user defined variables are available in AJO using the U buffer
- * .. call JFOP ------------------------------------------------------------------
- * .. -- with returned status
- * .input "de.abas.training.calling.FopCallsJFopArgumentsStatus.class"
+ * .. call JFOP --------------------------------------------- with returned status
+ * !INPUT
+ * .formula U|xtmessage = "Ok"
+ * .read "Please enter alphabetical letters and numbers only" U|xtinput
  * ..
- * .. .set debug +
- * .. display result -------------------------------------------------------------
- * xiResult: 'U|xiResult'
+ * .input "de.abas.training.basic.calling.FopCallsAjoToCheckInputString.class"
+ * .continue END ? G|status = 0
+ * .box "Message"
+ * 'U|xtmessage'
  * ..
- * If Result =! 1 => 0 (ok) else 1 (error)
- * Status: 'G|status'
+ * .continue INPUT
+ * ..
  * .. end ------------------------------------------------------------------------
  * !END
  * .end
@@ -54,47 +48,25 @@ import de.abas.jfop.base.buffer.UserTextBuffer;
  */
 public class FOcallsAJO implements ContextRunnable {
 
-	private DbContext ctx = null;
-
 	@Override
 	public int runFop(FOPSessionContext context, String[] args) throws FOPException {
-		ctx = context.getDbContext();
-		ctx.out().println("JFOP running ...");
-		ctx.close();
+		UserTextBuffer userTextBuffer =
+				BufferFactory.newInstance(true).getUserTextBuffer();
 
-		// gets the U buffer
-		// BufferFactory.newInstance(false) => FO commands German
-		// BufferFactory.newInstance(true) => FO commands English
-		UserTextBuffer userTextBuffer = BufferFactory.newInstance(false).getUserTextBuffer();
-
-		int no1 = 0;
-		int no2 = 0;
-
-		// checks whether the U buffer variable xiNo1 was already defined
-		if (userTextBuffer.isVarDefined("xiNo1")) {
-			// assigns value of xiNo1 to no1
-			no1 = userTextBuffer.getIntegerValue("xiNo1");
-		}
-
-		// checks whether the U buffer variable xiNo2 was already defined
-		if (userTextBuffer.isVarDefined("xiNo2")) {
-			// assigns value of xiNo2 to no2
-			no2 = userTextBuffer.getIntegerValue("xiNo2");
-		}
-
-		// adds no1 and no2
-		int result = no1 + no2;
-
-		// assigns result to U buffer variable xiResult
-		userTextBuffer.setValue("xiResult", result);
-
-		// returns to calling FOP
-		if (result != 0) {
-			// returns status 0 (ok) if result is not 0
-			return 0;
+		// all variables have to be declared in the FOP
+		if (userTextBuffer.isVarDefined("xtinput")
+				& userTextBuffer.isVarDefined("xtmessage")) {
+			if (!userTextBuffer.getStringValue("xtinput").matches("[a-zA-Z0-9]+")) {
+				userTextBuffer.setValue("xtmessage",
+						"You can only enter alphabetical letters and numbers");
+				return 1;
+			}
+			else {
+				return 0;
+			}
 		}
 		else {
-			// returns status 1 (error) else
+			userTextBuffer.setValue("xtmessage", "xtinput or xtmessage not defined");
 			return 1;
 		}
 	}

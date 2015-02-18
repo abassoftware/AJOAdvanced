@@ -145,10 +145,18 @@ public class ProductEventHandler {
 		// uses StringWriter object to read current content of
 		// freeText2
 		Writer writer = head.getFreeText2(new StringWriter());
-		String write = head.getDrawingNorm();
+		String original = writer.toString();
+		
+		String newInfo = head.getDrawingNorm();
+		newInfo = new AbasDate() + " -> " + newInfo;
+		
+		String empty = "";
+		head.setFreeText2(new StringReader(empty));
+		
+		writer = new StringWriter();
+		writer.append(newInfo);
 		writer.append('\n');
-		write = new AbasDate() + " -> " + write;
-		writer.append(write);
+		writer.append(original);
 		// uses StringReader to Read content of Writer object
 		// and assigns it to freeText2
 		head.setFreeText2(new StringReader(writer.toString()));

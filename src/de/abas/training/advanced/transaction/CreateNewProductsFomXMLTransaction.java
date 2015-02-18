@@ -1,20 +1,15 @@
 package de.abas.training.advanced.transaction;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
-import de.abas.eks.jfop.FOPException;
-import de.abas.eks.jfop.remote.ContextRunnable;
-import de.abas.eks.jfop.remote.FOPSessionContext;
 import de.abas.erp.db.DbContext;
 import de.abas.erp.db.Transaction;
 import de.abas.erp.db.schema.part.Product;
@@ -23,165 +18,149 @@ import de.abas.erp.db.schema.part.ProductEditor.Row;
 import de.abas.erp.db.selection.Conditions;
 import de.abas.erp.db.selection.SelectionBuilder;
 import de.abas.erp.db.util.QueryUtil;
+import de.abas.training.advanced.common.AbstractAjoAccess;
 
-public class CreateNewProductsFomXMLTransaction implements ContextRunnable {
+public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess {
+
+	private String xmlFile = "win/tmp/products.xml";
+	private String logFile = "win/tmp/products.log";
+
+	private BufferedWriter bufferedWriter = null;
+	private DbContext dbContext = getDbContext();
+	private boolean rollback = true;
+
+	private String message = "Ok";
+	private Transaction transaction = null;
 
 	@Override
-	public int runFop(FOPSessionContext arg0, String[] arg1)
-			throws FOPException {
-		DbContext dbContext = arg0.getDbContext();
-		run(dbContext,arg1);
-		return 0;
-	}
+	public int run(String[] args) {
 
-	public void run(DbContext dbContext, String[] arg1) {
-		
-		// jdom-2-0-5.jar einbinden und in mandant.classpath eintragen
-		
-		String logFile = "win/tmp/ProductListToRead.log";
-		String xmlFile = "win/tmp/ProductListToRead.xml";
-		
-		if(arg1.length == 3){
-			xmlFile = arg1[1];
-			logFile = arg1[2];
+		// adding jdom-2-0-5.jar to build path and enter in mandant.classpath
+
+		if (args.length == 3) {
+			xmlFile = args[1];
+			logFile = args[2];
 		}
-		
-		File file = new File(logFile);
-		if(!file.exists()){
-			try {
-				boolean createNewFile = file.createNewFile();
-				if(createNewFile){
-					dbContext.out().println("Datei " + logFile + "wurde angelegt");
-				}
-			} catch (IOException e) {
-				dbContext.out().println(e.getMessage());
-			}
-		}
-		
+
 		SAXBuilder saxBuilder = new SAXBuilder();
 		Document document = null;
-		
+
 		try {
-			BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(logFile));
+			bufferedWriter = new BufferedWriter(new FileWriter(logFile));
 			document = saxBuilder.build(xmlFile);
+
+			// get root element
 			Element rootElement = document.getRootElement();
-			if(rootElement.getName().equals("abasData")){
-				boolean rollback = false;
-				dbContext.out().println("rootElement: " + rootElement.getName());
+
+			// checks whether XML file is valid abas XML
+			if (rootElement.getName().equals("abasData")) {
+				rollback = false;
+				// get recordSet
 				Element recordSet = rootElement.getChild("recordSet");
-				List<Attribute> attributes = recordSet.getAttributes();
-				for (Attribute attribute : attributes) {
-					dbContext.out().println(attribute.getName() + " -> " + attribute.getValue());
-				}
-				
+
+				// get all records
 				List<Element> records = recordSet.getChildren();
-				
-				Transaction transaction = dbContext.getTransaction();
+
+				// initializes transaction
+				transaction = dbContext.getTransaction();
 				transaction.begin();
-				
+
+				ProductEditor productEditor = null;
+				// iterate all records
 				for (Element record : records) {
-					ProductEditor productEditor = dbContext.newObject(ProductEditor.class);
-					List<Attribute> recordAttributes = record.getAttributes();
-					
-					for (Attribute attribute : recordAttributes) {
-						dbContext.out().println(attribute.getName() + " -> " + attribute.getValue());
-						if(attribute.getName().equals("swd")){
-							SelectionBuilder<Product> selectionBuilder = SelectionBuilder.create(Product.class);
-							selectionBuilder.add(Conditions.eq(Product.META.swd, attribute.getValue()));
-							Product first = QueryUtil.getFirst(dbContext, selectionBuilder.build());
-							
-							if(first != null){
-								rollback = true;
-								String message = "Datensatz swd: " + attribute.getValue() + " bereits vorhanden";
-								bufferedWriter.write(message);
-								bufferedWriter.newLine();
-							}							
-						}
-					}
-					
-					if(rollback){
-						productEditor.abort();
-						break;
-					} // if rollback = false, dann Datensatz anlegen
-					else {
+					String swd = record.getAttribute("swd").getValue();
+					dbContext.out().println("search word: " + swd);
+
+					// create objects
+					productEditor = dbContext.newObject(ProductEditor.class);
+
+					SelectionBuilder<Product> selectionBuilder =
+							SelectionBuilder.create(Product.class);
+					selectionBuilder.add(Conditions.eq(Product.META.swd, swd));
+
+					if ((QueryUtil.getFirst(dbContext, selectionBuilder.build())) == null) {
+						dbContext.out().println(
+								"Product " + swd + " does not yet exist");
+						rollback = false;
+						// gets all elements in next level
 						List<Element> recordChildren = record.getChildren();
 						for (Element recordChild : recordChildren) {
-							if(recordChild.getName().equals("header")){
-								dbContext.out().println("header schreiben");
-								List<Element> fields = recordChild.getChildren();
-								for (Element field : fields) {
-									String name = field.getAttributeValue("name");
-									String value = field.getValue();
-									String message = "header-Field: " + name + " -> " + value;
-									dbContext.out().println(message);
-									bufferedWriter.write(message);
-									bufferedWriter.newLine();
+							if (recordChild.getName().equals("header")) {
+								List<Element> headerFields =
+										recordChild.getChildren();
+								for (Element headerField : headerFields) {
+									String name =
+											headerField.getAttributeValue("name");
+									String value = headerField.getValue();
 									productEditor.setString(name, value);
+									dbContext.out().println(name + " - " + value);
 								}
-							}else if (recordChild.getName().equals("row")) {
-								dbContext.out().println("row schreiben");
-								List<Element> fields = recordChild.getChildren();
-
+							}
+							else if (recordChild.getName().equals("row")) {
 								Row appendRow = productEditor.table().appendRow();
-								for (Element field : fields) {
-									String name = field.getAttributeValue("name");
-									String value = field.getValue();
-									String message = "row-Field: " + name + " -> " + value;
-									dbContext.out().println(message);
-									bufferedWriter.write(message);
-									bufferedWriter.newLine();
+								List<Element> rowFields = recordChild.getChildren();
+								for (Element rowField : rowFields) {
+									String name = rowField.getAttributeValue("name");
+									String value = rowField.getValue();
 									appendRow.setString(name, value);
+									dbContext.out().println(name + " - " + value);
 								}
-							}							
-						} // for-each recordChildren
-					} // else rollback
-					
-					// Zu Testzwecken wird der productEditor mit abort verlassen
-//					productEditor.abort();
-					String message = "Product wurde angelegt";
-//					bufferedWriter.write(message);
-//					bufferedWriter.newLine();
-					// commit
-					productEditor.commit();
-					Product objectId = productEditor.objectId();
-					String swd = objectId.getSwd();
-					String idno = objectId.getIdno();
-					// logFil schreiben
-					message = swd + " - " + idno + " wurde angelegt";
-					bufferedWriter.write(message);
-					bufferedWriter.newLine();
-				} // for-each über records
-				
-				if(rollback){
-					transaction.rollback();
-					String message = "rollback";
-					dbContext.out().println(message);
-					bufferedWriter.write(message);
-					bufferedWriter.newLine();
-				}else {
-					transaction.commit();
-					String message = "commit";
-					dbContext.out().println(message);
-					bufferedWriter.write(message);
-					bufferedWriter.newLine();
+							}
+						}
+						// For testing purposes
+						// productEditor.abort();
+						productEditor.commit();
+						Product product = productEditor.objectId();
+						message = product.getIdno() + " -> " + product.getSwd();
+						dbContext.out().println("message: " + message);
+						bufferedWriter.write(message);
+						bufferedWriter.newLine();
+
+					}
+					else {
+						productEditor.abort();
+						rollback = true;
+						message = "Product " + swd + " does already exist";
+						dbContext.out().println("message: " + message);
+						bufferedWriter.write(message);
+						bufferedWriter.newLine();
+						break;
+					}
 				}
-			} //abasDate?
+
+				if (rollback == true) {
+					message = message + " -> rollback";
+					transaction.rollback();
+				}
+				else {
+					message = message + " -> commit";
+					transaction.commit();
+				}
+				dbContext.out().println("message: " + message);
+				bufferedWriter.write(message);
+				bufferedWriter.newLine();
+
+			}
 			else {
-				String message = "kein abasData xml-Format";
-				dbContext.out().println(message);
+				message = "Kein abas xml-Format";
 				bufferedWriter.write(message);
 				bufferedWriter.newLine();
 			}
-			// Zum Schluss
-			String message = "Programm Ende";
-			dbContext.out().println(message);
+
+			message = "Programmende";
 			bufferedWriter.write(message);
 			bufferedWriter.newLine();
+			dbContext.out().println(message);
 			bufferedWriter.close();
-		} catch (IOException e) {
-			dbContext.out().println("Fehler " + e.getMessage());
-		} catch (JDOMException e) {
-			dbContext.out().println(e.getMessage());
 		}
+		catch (JDOMException e) {
+			dbContext.out().println(e.getMessage());
+			return 1;
+		}
+		catch (IOException e) {
+			dbContext.out().println(e.getMessage());
+			return 1;
+		}
+		return 0;
 	}
 }

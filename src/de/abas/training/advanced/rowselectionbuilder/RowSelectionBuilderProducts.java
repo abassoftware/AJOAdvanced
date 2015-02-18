@@ -17,28 +17,13 @@ import de.abas.training.advanced.common.AbstractAjoAccess;
  *
  */
 public class RowSelectionBuilderProducts extends AbstractAjoAccess {
-	
+
 	public static void main(String[] args) {
 		new RowSelectionBuilderProducts().runClientProgram(args);
 	}
 
-	/**
-	 * Selects first product with the specified search word.
-	 *
-	 * @param swd The search word.
-	 * @return Returns the product as instance of SelectableObject.
-	 */
-	private SelectableObject getSelectedProduct(String swd) {
-		SelectionBuilder<Product> selectionBuilder =
-				SelectionBuilder.create(Product.class);
-		selectionBuilder.add(Conditions.eq(Product.META.swd, swd));
-		Product product =
-				QueryUtil.getFirst(getDbContext(), selectionBuilder.build());
-		return product;
-	}
-
 	@Override
-	public void run(String[] args) {
+	public int run(String[] args) {
 		RowSelectionBuilder<Product, Row> rowSelectionBuilder =
 				RowSelectionBuilder.create(Product.class, Row.class);
 
@@ -69,6 +54,23 @@ public class RowSelectionBuilderProducts extends AbstractAjoAccess {
 			getDbContext().out().println("Query-Object: null");
 		}
 
+		return 0;
+
+	}
+
+	/**
+	 * Selects first product with the specified search word.
+	 *
+	 * @param swd The search word.
+	 * @return Returns the product as instance of SelectableObject.
+	 */
+	private SelectableObject getSelectedProduct(String swd) {
+		SelectionBuilder<Product> selectionBuilder =
+				SelectionBuilder.create(Product.class);
+		selectionBuilder.add(Conditions.eq(Product.META.swd, swd));
+		Product product =
+				QueryUtil.getFirst(getDbContext(), selectionBuilder.build());
+		return product;
 	}
 
 }
