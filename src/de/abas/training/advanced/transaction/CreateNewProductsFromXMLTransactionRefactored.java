@@ -21,7 +21,7 @@ import de.abas.erp.db.selection.SelectionBuilder;
 import de.abas.erp.db.util.QueryUtil;
 import de.abas.training.advanced.common.AbstractAjoAccess;
 
-public class CreateNewProductsFomXMLTransactionRefactored extends AbstractAjoAccess {
+public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAccess {
 	String logFile = "win/tmp/ProductListToRead.log";
 	String xmlFile = "win/tmp/ProductListToRead.xml";
 	private DbContext dbContext = getDbContext();

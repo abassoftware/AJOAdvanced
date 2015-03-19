@@ -20,13 +20,13 @@ import de.abas.erp.db.selection.SelectionBuilder;
 import de.abas.erp.db.util.QueryUtil;
 import de.abas.training.advanced.common.AbstractAjoAccess;
 
-public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess {
+public class CreateNewProductsFromXMLTransaction extends AbstractAjoAccess {
 
 	private String xmlFile = "win/tmp/products.xml";
 	private String logFile = "win/tmp/products.log";
 
 	private BufferedWriter bufferedWriter = null;
-	private DbContext dbContext = getDbContext();
+	private DbContext dbContext = null;
 	private boolean rollback = true;
 
 	private String message = "Ok";
@@ -34,6 +34,8 @@ public class CreateNewProductsFomXMLTransaction extends AbstractAjoAccess {
 
 	@Override
 	public int run(String[] args) {
+
+		dbContext = getDbContext();
 
 		// adding jdom-2-0-5.jar to build path and enter in mandant.classpath
 

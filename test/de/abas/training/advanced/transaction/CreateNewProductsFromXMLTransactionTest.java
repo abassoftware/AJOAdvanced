@@ -17,11 +17,11 @@ import de.abas.erp.db.selection.Conditions;
 import de.abas.erp.db.selection.SelectionBuilder;
 import de.abas.training.advanced.common.ConnectionProvider;
 
-public class CreateNewProductsFomXMLTransactionTest {
+public class CreateNewProductsFromXMLTransactionTest {
 
 	@Rule
 	public TestName testName = new TestName();
-	private CreateNewProductsFomXMLTransaction instance;
+	private CreateNewProductsFromXMLTransaction instance;
 	private DbContext ctx;
 
 	@Test
@@ -56,7 +56,7 @@ public class CreateNewProductsFomXMLTransactionTest {
 
 	@Before
 	public void setup() {
-		instance = new CreateNewProductsFomXMLTransaction();
+		instance = new CreateNewProductsFromXMLTransaction();
 		createClientContext();
 		cleanup();
 	}
