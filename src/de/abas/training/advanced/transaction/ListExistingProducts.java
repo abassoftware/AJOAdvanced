@@ -20,7 +20,8 @@ public class ListExistingProducts implements ContextRunnable {
 
 	private void run(DbContext dbContext) {
 		// Alle Producte deren Suchwort mit MYPC beginnt löschen
-		SelectionBuilder<Product> selectionBuilder = SelectionBuilder.create(Product.class);
+		SelectionBuilder<Product> selectionBuilder =
+				SelectionBuilder.create(Product.class);
 		selectionBuilder.add(Conditions.starts(Product.META.swd, "MYPC"));
 		Query<Product> query = dbContext.createQuery(selectionBuilder.build());
 		for (Product product : query) {
