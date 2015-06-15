@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,6 +24,16 @@ public class CreateNewProductsFromXMLTransactionTest {
 	public TestName testName = new TestName();
 	private CreateNewProductsFromXMLTransaction instance;
 	private DbContext ctx;
+
+	/**
+	 * Deletes all products that might be left from previous tests.
+	 */
+	@After
+	public void cleanup() {
+		deleteProducts("TESTHEAD");
+		deleteProducts("TESTMYPC");
+		deleteProducts("TESTROW");
+	}
 
 	@Test
 	public void importOneProduct() {
@@ -76,15 +87,6 @@ public class CreateNewProductsFromXMLTransactionTest {
 		assertEquals("count of products with swd TESTHEAD", 1, products.size());
 		assertEquals("the product should have its original value in descrOperLang",
 				"Test product for doublet check", products.get(0).getDescrOperLang());
-	}
-
-	/**
-	 * Deletes all products that might be left from previous tests.
-	 */
-	private void cleanup() {
-		deleteProducts("TESTHEAD");
-		deleteProducts("TESTMYPC");
-		deleteProducts("TESTROW");
 	}
 
 	/**

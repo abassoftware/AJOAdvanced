@@ -1,11 +1,9 @@
 package de.abas.training.advanced.transaction;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -22,11 +20,21 @@ import de.abas.erp.db.util.QueryUtil;
 import de.abas.training.advanced.common.AbstractAjoAccess;
 
 public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAccess {
-	String logFile = "win/tmp/ProductListToRead.log";
-	String xmlFile = "win/tmp/ProductListToRead.xml";
+
+	// TODO: Write test for class: Invalid field value productListElem(!1) = [MYMOB0]
+	// MYMOB0: Not found [1361]
+
+	private static final Logger logger = Logger
+			.getLogger(CreateNewProductsFromXMLTransactionRefactored.class);
+
+	public static void main(String[] args) {
+		new CreateNewProductsFromXMLTransactionRefactored().runClientProgram(args);
+	}
+
+	private String xmlFile = "files/products.xml";
 	private DbContext dbContext = getDbContext();
 	private boolean rollback;
-	private BufferedWriter bufferedWriter;
+
 	private ProductEditor productEditor;
 
 	@Override
@@ -34,12 +42,9 @@ public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAc
 
 		// adding jdom-2-0-5.jar to build path and enter in mandant.classpath
 
-		initName_LogFile_XmlFile(arg1);
-
-		getLogFile();
+		initXmlFileName(arg1);
 
 		try {
-			bufferedWriter = new BufferedWriter(new FileWriter(logFile));
 			Element rootElement = new SAXBuilder().build(xmlFile).getRootElement();
 			if (isValidXml(rootElement)) {
 				rollback = false;
@@ -53,26 +58,20 @@ public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAc
 				roolbackIfNecessary(transaction);
 			}
 			else {
-				String message = "kein abasData xml-Format";
-				dbContext.out().println(message);
-				writeLogFile(message);
+				logger.error("is not valid xml formatting");
 			}
-			String message = "Programmende";
-			dbContext.out().println(message);
-			writeLogFile(message);
-			bufferedWriter.close();
+			logger.info("end of program");
 		}
 		catch (IOException e) {
-			dbContext.out().println("Fehler " + e.getMessage());
+			logger.fatal(e.getMessage(), e);
 			return 1;
 		}
 		catch (JDOMException e) {
-			dbContext.out().println(e.getMessage());
+			logger.fatal(e.getMessage(), e);
 			return 1;
 		}
 		finally {
 			closeProductEditor();
-			closeBufferedWriter(dbContext);
 		}
 		return 0;
 	}
@@ -93,20 +92,9 @@ public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAc
 
 			if (first != null) {
 				rollback = true;
-				String message =
-						"Object swd: " + attribute.getValue() + " already existing";
-				writeLogFile(message);
+				logger.error(String.format("Object swd: %s already exiting",
+						attribute.getValue()));
 			}
-		}
-	}
-
-	private void closeBufferedWriter(DbContext dbContext) {
-		try {
-			bufferedWriter.close();
-		}
-		catch (IOException e) {
-			dbContext.out().println(
-					"Error while closing the log file -> " + e.getMessage());
 		}
 	}
 
@@ -137,8 +125,8 @@ public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAc
 			List<Attribute> recordAttributes = record.getAttributes();
 
 			for (Attribute attribute : recordAttributes) {
-				dbContext.out().println(
-						attribute.getName() + " -> " + attribute.getValue());
+				logger.info(String.format("Attributes: %s -> %s",
+						attribute.getName(), attribute.getValue()));
 				checkWhetherProductExists(attribute);
 			}
 
@@ -152,15 +140,12 @@ public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAc
 
 			// for testing purposes
 			// productEditor.abort();
-			String message = "Product was created";
 			// commit
 			productEditor.commit();
 			Product objectId = productEditor.objectId();
 			String swd = objectId.getSwd();
 			String idno = objectId.getIdno();
-			// write log file
-			message = swd + " - " + idno + " was created";
-			writeLogFile(message);
+			logger.info(String.format("Product %s - %s was created", swd, idno));
 		}
 	}
 
@@ -168,34 +153,18 @@ public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAc
 		List<Attribute> attributes =
 				rootElement.getChild("recordSet").getAttributes();
 		for (Attribute attribute : attributes) {
-			dbContext.out().println(
-					attribute.getName() + " -> " + attribute.getValue());
+			logger.info(String.format("Attributes: %s -> %s", attribute.getName(),
+					attribute.getValue()));
 		}
 	}
 
 	private void displayRootElementName(Element rootElement) {
-		dbContext.out().println("rootElement: " + rootElement.getName());
+		logger.info(String.format("rootElement: %s", rootElement.getName()));
 	}
 
-	private void getLogFile() {
-		File file = new File(logFile);
-		if (!file.exists()) {
-			try {
-				boolean createNewFile = file.createNewFile();
-				if (createNewFile) {
-					dbContext.out().println("File " + logFile + " created");
-				}
-			}
-			catch (IOException e) {
-				dbContext.out().println(e.getMessage());
-			}
-		}
-	}
-
-	private void initName_LogFile_XmlFile(String[] arg1) {
-		if (arg1.length == 3) {
+	private void initXmlFileName(String[] arg1) {
+		if (arg1.length == 2) {
 			xmlFile = arg1[1];
-			logFile = arg1[2];
 		}
 	}
 
@@ -206,49 +175,36 @@ public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAc
 	private void roolbackIfNecessary(Transaction transaction) throws IOException {
 		if (rollback) {
 			transaction.rollback();
-			String message = "rollback";
-			dbContext.out().println(message);
-			writeLogFile(message);
+			logger.info("rollback");
 		}
 		else {
 			transaction.commit();
-			String message = "commit";
-			dbContext.out().println(message);
-			writeLogFile(message);
+			logger.info("commit");
 		}
-	}
-
-	private void writeLogFile(String message) throws IOException {
-		bufferedWriter.write(message);
-		bufferedWriter.newLine();
 	}
 
 	private void writeProductHeaderFields(DbContext dbContext, Element recordChild)
 			throws IOException {
-		dbContext.out().println("writing header");
+		logger.info("writing header");
 		List<Element> fields = recordChild.getChildren();
 		for (Element field : fields) {
 			String name = field.getAttributeValue("name");
 			String value = field.getValue();
-			String message = "header field: " + name + " -> " + value;
-			dbContext.out().println(message);
-			writeLogFile(message);
+			logger.info(String.format("header field: %s -> %s", name, value));
 			productEditor.setString(name, value);
 		}
 	}
 
 	private void writeProductRowFields(DbContext dbContext, Element recordChild)
 			throws IOException {
-		dbContext.out().println("writing row");
+		logger.info("writing row");
 		List<Element> fields = recordChild.getChildren();
 
 		Row appendRow = productEditor.table().appendRow();
 		for (Element field : fields) {
 			String name = field.getAttributeValue("name");
 			String value = field.getValue();
-			String message = "row field: " + name + " -> " + value;
-			dbContext.out().println(message);
-			writeLogFile(message);
+			logger.info(String.format("row field: %s -> %s", name, value));
 			appendRow.setString(name, value);
 		}
 	}

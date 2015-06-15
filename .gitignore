@@ -4,3 +4,4 @@ classes/
 *.bak
 *.log
 ajo-access.properties
+Logs/
