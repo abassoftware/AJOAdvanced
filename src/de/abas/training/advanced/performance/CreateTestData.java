@@ -24,7 +24,7 @@ public class CreateTestData implements ContextRunnable {
 		return 0;
 	}
 
-	private void createOneSalesOrder(int i) {
+	private void createOneProduct(int i) {
 		final ProductEditor newObject = ctx.newObject(ProductEditor.class);
 		newObject.setSwd("AJOPERF" + i);
 		final Row newRow = newObject.table().appendRow();
@@ -35,7 +35,7 @@ public class CreateTestData implements ContextRunnable {
 
 	private void createSalesOrders(int count) {
 		for (int i = 0; i < count; i++) {
-			createOneSalesOrder(i);
+			createOneProduct(i);
 		}
 	}
 
