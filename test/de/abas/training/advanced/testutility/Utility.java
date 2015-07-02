@@ -15,8 +15,7 @@ public class Utility {
 	private String client;
 
 	/**
-	 * Creates a client context with the standard port and predefined application
-	 * name.
+	 * Creates a client context with the standard port and predefined application name.
 	 *
 	 * @return A client database context.
 	 */
@@ -32,12 +31,10 @@ public class Utility {
 	 * Deletes specified objects.
 	 *
 	 * @param ctx The database context.
-	 * @param className The name of the class from which to objects are to be
-	 * deleted.
+	 * @param className The name of the class from which to objects are to be deleted.
 	 * @param swd The search word that specifies the objects.
 	 */
-	public <C extends SelectableObject & Deletable> void deleteObjects(
-			DbContext ctx, Class<C> className, String swd) {
+	public <C extends SelectableObject & Deletable> void deleteObjects(DbContext ctx, Class<C> className, String swd) {
 		SelectionBuilder<C> selectionBuilder = SelectionBuilder.create(className);
 		selectionBuilder.add(Conditions.starts("swd", swd));
 		List<C> objects = ctx.createQuery(selectionBuilder.build()).execute();
@@ -64,15 +61,13 @@ public class Utility {
 		return hostname;
 	}
 
-	public <C extends SelectableObject> List<C> getObjects(DbContext ctx,
-			Class<C> className, String swd) {
+	public <C extends SelectableObject> List<C> getObjects(DbContext ctx, Class<C> className, String swd) {
 		SelectionBuilder<C> selectionBuilder = SelectionBuilder.create(className);
-		selectionBuilder.add(Conditions.eq("swd", swd));
+		selectionBuilder.add(Conditions.starts("swd", swd));
 		return ctx.createQuery(selectionBuilder.build()).execute();
 	}
 
-	public <C extends SelectableObject> List<C> getObjects(DbContext ctx,
-			Class<C> className, String idnoFrom, String idnoTo) {
+	public <C extends SelectableObject> List<C> getObjects(DbContext ctx, Class<C> className, String idnoFrom, String idnoTo) {
 		SelectionBuilder<C> selectionBuilder = SelectionBuilder.create(className);
 		selectionBuilder.add(Conditions.between("idno", idnoFrom, idnoTo));
 		return ctx.createQuery(selectionBuilder.build()).execute();

@@ -2,6 +2,7 @@ package de.abas.training.advanced.transaction;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -12,61 +13,38 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import de.abas.erp.db.DbContext;
+import de.abas.erp.db.EditorAction;
+import de.abas.erp.db.RowQuery;
+import de.abas.erp.db.exception.CommandException;
 import de.abas.erp.db.schema.part.Product;
+import de.abas.erp.db.schema.part.Product.Row;
+import de.abas.erp.db.schema.part.ProductEditor;
+import de.abas.erp.db.selection.Conditions;
+import de.abas.erp.db.selection.RowSelectionBuilder;
 import de.abas.training.advanced.testutility.TestLogger;
 import de.abas.training.advanced.testutility.Utility;
 
 public class CreateNewProductsFromXMLTransactionLiveTest {
 
+	private static Logger logger = TestLogger.getLogger();
 	@Rule
 	public TestName testName = new TestName();
 	private Utility utility = new Utility();
 	private DbContext ctx;
-	private static Logger logger = TestLogger.getLogger();
+	private ArrayList<String> swds = new ArrayList<String>();
 
 	@Test
 	public void productMYCPU0exits() {
-		checkSubBOMProducts("MYCPU0");
-	}
-
-	@Test
-	public void productMYCPU1exits() {
-		checkSubBOMProducts("MYCPU1");
-	}
-
-	@Test
-	public void productMYCPU2exits() {
-		checkSubBOMProducts("MYCPU2");
-	}
-
-	@Test
-	public void productMYHDD1exits() {
-		checkSubBOMProducts("MYHDD1");
-	}
-
-	@Test
-	public void productMYMOB0exits() {
-		checkSubBOMProducts("MYMOB0");
-	}
-
-	@Test
-	public void productMYMOB1exits() {
-		checkSubBOMProducts("MYMOB1");
-	}
-
-	@Test
-	public void productMYRAM0exits() {
-		checkSubBOMProducts("MYRAM0");
-	}
-
-	@Test
-	public void productMYRAM2exits() {
-		checkSubBOMProducts("MYCPU2");
+		for (String swd : swds) {
+			checkSubBOMProducts(swd);
+		}
 	}
 
 	@Before
 	public void setup() {
-		utility.createClientContext();
+		ctx = utility.createClientContext();
+		fillSwds();
+		reset();
 	}
 
 	/**
@@ -82,6 +60,77 @@ public class CreateNewProductsFromXMLTransactionLiveTest {
 		}
 		logger.info(String.format("Product %s exited %d times", swd, products.size()));
 		assertEquals("product exits once", 1, products.size());
+	}
+
+	/**
+	 * Creates a new product using the search word given as parameter.
+	 *
+	 * @param swd Search word of new product.
+	 */
+	private void createSubBOMProduct(String swd) {
+		ProductEditor productEditor = ctx.newObject(ProductEditor.class);
+		productEditor.setSwd(swd);
+		productEditor.setDescrOperLang(swd);
+		productEditor.setSalesPrice(22d);
+		productEditor.commit();
+		logger.info(String.format("Product %s created: %s", swd, productEditor.objectId().getIdno()));
+	}
+
+	/**
+	 * Deletes the given product from other product's subBOMs.
+	 *
+	 * @param product SubBOM product.
+	 */
+	private void deleteProductFromOtherSubBOMs(Product product) {
+		try {
+			RowSelectionBuilder<Product, Row> rowSelectionBuilder = RowSelectionBuilder.create(Product.class, Product.Row.class);
+			rowSelectionBuilder.add(Conditions.eq(Product.Row.META.productListElem, product));
+			RowQuery<Product, Row> query = ctx.createQuery(rowSelectionBuilder.build());
+			for (Row parentRow : query) {
+				ProductEditor productEditor = parentRow.header().createEditor();
+				productEditor.open(EditorAction.UPDATE);
+				productEditor.table().deleteRow(parentRow.getRowNo());
+				productEditor.commit();
+			}
+		}
+		catch (CommandException e) {
+			logger.error(String.format("Error while trying to delete product %s from other SubBOMs", product.getSwd()), e);
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Fills swds with all necessary SubBOM products.
+	 */
+	private void fillSwds() {
+		swds.add("MYRAM0");
+		swds.add("MYRAM2");
+		swds.add("MYCPU0");
+		swds.add("MYCPU1");
+		swds.add("MYCPU2");
+		swds.add("MYMOB0");
+		swds.add("MYMOB1");
+		swds.add("MYHDD1");
+	}
+
+	/**
+	 * Resets products in SubBOM.
+	 */
+	private void reset() {
+		for (String swd : swds) {
+			try {
+				List<Product> products = utility.getObjects(ctx, Product.class, swd);
+				for (Product product : products) {
+					deleteProductFromOtherSubBOMs(product);
+					product.delete();
+					logger.info(String.format("Product %s deleted", product.getSwd()));
+				}
+			}
+			catch (NullPointerException e) {
+				logger.info(String.format("Product %s did not exist", swd));
+			}
+			createSubBOMProduct(swd);
+		}
 	}
 
 }
