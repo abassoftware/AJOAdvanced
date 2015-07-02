@@ -26,25 +26,27 @@ import de.abas.training.advanced.testutility.Utility;
 
 public class CreateNewProductsFromXMLTransactionLiveTest {
 
-	private static Logger logger = TestLogger.getLogger();
 	@Rule
 	public TestName testName = new TestName();
 	private Utility utility = new Utility();
 	private DbContext ctx;
 	private ArrayList<String> swds = new ArrayList<String>();
-
-	@Test
-	public void productMYCPU0exits() {
-		for (String swd : swds) {
-			checkSubBOMProducts(swd);
-		}
-	}
+	private static Logger logger = TestLogger.getLogger();
 
 	@Before
 	public void setup() {
+		logger.info(TestLogger.SETUP_MESSAGE);
 		ctx = utility.createClientContext();
 		fillSwds();
 		reset();
+	}
+
+	@Test
+	public void subBOMProductsExits() {
+		logger.info(String.format(TestLogger.TEST_INIT_MESSAGE, testName.getMethodName()));
+		for (String swd : swds) {
+			checkSubBOMProducts(swd);
+		}
 	}
 
 	/**
