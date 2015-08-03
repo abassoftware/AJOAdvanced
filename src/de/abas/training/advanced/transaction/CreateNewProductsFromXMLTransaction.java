@@ -144,12 +144,12 @@ public class CreateNewProductsFromXMLTransaction extends AbstractAjoAccess {
 
 			}
 			else {
-				message = "Kein abas xml-Format";
+				message = "No valid abas xml";
 				bufferedWriter.write(message);
 				bufferedWriter.newLine();
 			}
 
-			message = "Programmende";
+			message = "End of program";
 			bufferedWriter.write(message);
 			bufferedWriter.newLine();
 			dbContext.out().println(message);
