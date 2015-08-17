@@ -24,18 +24,18 @@ public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAc
 	// TODO: Write test for class: Invalid field value productListElem(!1) = [MYMOB0]
 	// MYMOB0: Not found [1361]
 
-	private static final Logger logger = Logger
-			.getLogger(CreateNewProductsFromXMLTransactionRefactored.class);
-
 	public static void main(String[] args) {
 		new CreateNewProductsFromXMLTransactionRefactored().runClientProgram(args);
 	}
 
 	private String xmlFile = "files/products.xml";
+
 	private DbContext dbContext = getDbContext();
 	private boolean rollback;
-
 	private ProductEditor productEditor;
+
+	private static final Logger logger = Logger
+			.getLogger(CreateNewProductsFromXMLTransactionRefactored.class);
 
 	@Override
 	public int run(String[] arg1) {
@@ -58,7 +58,7 @@ public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAc
 				roolbackIfNecessary(transaction);
 			}
 			else {
-				logger.error("is not valid xml formatting");
+				logger.warn("is not valid xml formatting");
 			}
 			logger.info("end of program");
 		}
@@ -125,7 +125,7 @@ public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAc
 			List<Attribute> recordAttributes = record.getAttributes();
 
 			for (Attribute attribute : recordAttributes) {
-				logger.info(String.format("Attributes: %s -> %s",
+				logger.debug(String.format("Attributes: %s -> %s",
 						attribute.getName(), attribute.getValue()));
 				checkWhetherProductExists(attribute);
 			}
@@ -145,7 +145,7 @@ public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAc
 			Product objectId = productEditor.objectId();
 			String swd = objectId.getSwd();
 			String idno = objectId.getIdno();
-			logger.info(String.format("Product %s - %s was created", swd, idno));
+			logger.debug(String.format("Product %s - %s was created", swd, idno));
 		}
 	}
 
@@ -153,13 +153,13 @@ public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAc
 		List<Attribute> attributes =
 				rootElement.getChild("recordSet").getAttributes();
 		for (Attribute attribute : attributes) {
-			logger.info(String.format("Attributes: %s -> %s", attribute.getName(),
+			logger.debug(String.format("Attributes: %s -> %s", attribute.getName(),
 					attribute.getValue()));
 		}
 	}
 
 	private void displayRootElementName(Element rootElement) {
-		logger.info(String.format("rootElement: %s", rootElement.getName()));
+		logger.debug(String.format("rootElement: %s", rootElement.getName()));
 	}
 
 	private void initXmlFileName(String[] arg1) {
@@ -185,26 +185,26 @@ public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAc
 
 	private void writeProductHeaderFields(DbContext dbContext, Element recordChild)
 			throws IOException {
-		logger.info("writing header");
+		logger.debug("writing header");
 		List<Element> fields = recordChild.getChildren();
 		for (Element field : fields) {
 			String name = field.getAttributeValue("name");
 			String value = field.getValue();
-			logger.info(String.format("header field: %s -> %s", name, value));
+			logger.debug(String.format("header field: %s -> %s", name, value));
 			productEditor.setString(name, value);
 		}
 	}
 
 	private void writeProductRowFields(DbContext dbContext, Element recordChild)
 			throws IOException {
-		logger.info("writing row");
+		logger.debug("writing row");
 		List<Element> fields = recordChild.getChildren();
 
 		Row appendRow = productEditor.table().appendRow();
 		for (Element field : fields) {
 			String name = field.getAttributeValue("name");
 			String value = field.getValue();
-			logger.info(String.format("row field: %s -> %s", name, value));
+			logger.debug(String.format("row field: %s -> %s", name, value));
 			appendRow.setString(name, value);
 		}
 	}
