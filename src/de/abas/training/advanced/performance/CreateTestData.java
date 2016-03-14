@@ -8,7 +8,7 @@ import de.abas.erp.db.schema.part.ProductEditor;
 import de.abas.erp.db.schema.part.ProductEditor.Row;
 
 /**
- * Creates test data for <code>PerformanceOptimizationSalesOrder</code>.
+ * Creates test data for <code>PerformanceOptimization</code>.
  *
  * @author abas Software AG
  *

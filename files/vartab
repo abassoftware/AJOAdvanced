@@ -1,0 +1,6 @@
+# VARTAB EKS 8
+2  10 zdyteam         -                       I6          - 18  0 0 0 1 0 3 0 A A 0 #Team # #
+2  11 zdyarticle      -                     P2:1          - 18  0 0 0 1 0 3 0 A A 0 #Product # #
+2  12 zdyqty          -                     R7.2          - 18  0 0 0 1 0 3 0 A A 0 #Quantity # #
+2  13 zdywarehouseunit -                     TAZ1          - 18  0 0 0 1 0 3 0 A A 0 #Stock#unit # #
+2  14 zdydate         -                     GD19          - 18  0 0 0 1 0 3 0 A A 0 #Date # #
