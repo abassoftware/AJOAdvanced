@@ -21,21 +21,21 @@ import de.abas.training.advanced.common.AbstractAjoAccess;
 
 public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAccess {
 
-	// TODO: Write test for class: Invalid field value productListElem(!1) = [MYMOB0]
+	// TODO: Write test for class: Invalid field value productListElem(!1) =
+	// [MYMOB0]
 	// MYMOB0: Not found [1361]
+
+	private static final Logger logger = Logger.getLogger(CreateNewProductsFromXMLTransactionRefactored.class);
 
 	public static void main(String[] args) {
 		new CreateNewProductsFromXMLTransactionRefactored().runClientProgram(args);
 	}
 
 	private String xmlFile = "files/products.xml";
+	private final DbContext dbContext = getDbContext();
+	private Transaction transaction;
 
-	private DbContext dbContext = getDbContext();
-	private boolean rollback;
 	private ProductEditor productEditor;
-
-	private static final Logger logger = Logger
-			.getLogger(CreateNewProductsFromXMLTransactionRefactored.class);
 
 	@Override
 	public int run(String[] arg1) {
@@ -45,55 +45,49 @@ public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAc
 		initXmlFileName(arg1);
 
 		try {
-			Element rootElement = new SAXBuilder().build(xmlFile).getRootElement();
+			final Element rootElement = new SAXBuilder().build(xmlFile).getRootElement();
 			if (isValidXml(rootElement)) {
-				rollback = false;
 				displayRootElementName(rootElement);
 				displayRecordSetAttributes(rootElement);
 
-				Transaction transaction = beginTransaction();
+				beginTransaction();
 
 				createProductsIfNotExisting(rootElement);
 
-				roolbackIfNecessary(transaction);
-			}
-			else {
+			} else {
 				logger.warn("is not valid xml formatting");
 			}
 			logger.info("end of program");
-		}
-		catch (IOException e) {
+		} catch (final IOException e) {
 			logger.fatal(e.getMessage(), e);
 			return 1;
-		}
-		catch (JDOMException e) {
+		} catch (final JDOMException e) {
 			logger.fatal(e.getMessage(), e);
 			return 1;
-		}
-		finally {
+		} catch (final Exception e) {
+			logger.warn(e.getMessage(), e);
+		} finally {
 			closeProductEditor();
 		}
 		return 0;
 	}
 
-	private Transaction beginTransaction() {
-		Transaction transaction = dbContext.getTransaction();
+	private void beginTransaction() {
+		transaction = dbContext.getTransaction();
 		transaction.begin();
-		return transaction;
 	}
 
-	private void checkWhetherProductExists(Attribute attribute) throws IOException {
+	private void checkForRollback(Attribute attribute) throws Exception, IOException {
 		if (attribute.getName().equals("swd")) {
-			SelectionBuilder<Product> selectionBuilder =
-					SelectionBuilder.create(Product.class);
-			selectionBuilder.add(Conditions.eq(Product.META.swd,
-					attribute.getValue()));
-			Product first = QueryUtil.getFirst(dbContext, selectionBuilder.build());
+			final SelectionBuilder<Product> selectionBuilder = SelectionBuilder.create(Product.class);
+			selectionBuilder.add(Conditions.eq(Product.META.swd, attribute.getValue()));
+			final Product first = QueryUtil.getFirst(dbContext, selectionBuilder.build());
 
 			if (first != null) {
-				rollback = true;
-				logger.error(String.format("Object swd: %s already exiting",
-						attribute.getValue()));
+				final String message = String.format("Object swd: %s already exiting", attribute.getValue());
+				logger.error(message);
+				transaction.rollback();
+				throw new Exception(message);
 			}
 		}
 	}
@@ -106,55 +100,43 @@ public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAc
 		}
 	}
 
-	private void createProduct(DbContext dbContext, Element record)
-			throws IOException {
-		List<Element> recordChildren = record.getChildren();
-		for (Element recordChild : recordChildren) {
+	private void createProduct(DbContext dbContext, Element record) throws IOException {
+		final List<Element> recordChildren = record.getChildren();
+		for (final Element recordChild : recordChildren) {
 			if (recordChild.getName().equals("header")) {
 				writeProductHeaderFields(dbContext, recordChild);
-			}
-			else if (recordChild.getName().equals("row")) {
+			} else if (recordChild.getName().equals("row")) {
 				writeProductRowFields(dbContext, recordChild);
 			}
 		}
 	}
 
-	private void createProductsIfNotExisting(Element rootElement) throws IOException {
-		for (Element record : rootElement.getChild("recordSet").getChildren()) {
+	private void createProductsIfNotExisting(Element rootElement) throws Exception, IOException {
+		for (final Element record : rootElement.getChild("recordSet").getChildren()) {
+			final List<Attribute> recordAttributes = record.getAttributes();
+
+			for (final Attribute attribute : recordAttributes) {
+				logger.debug(String.format("Attributes: %s -> %s", attribute.getName(), attribute.getValue()));
+				checkForRollback(attribute);
+			}
+
 			productEditor = dbContext.newObject(ProductEditor.class);
-			List<Attribute> recordAttributes = record.getAttributes();
-
-			for (Attribute attribute : recordAttributes) {
-				logger.debug(String.format("Attributes: %s -> %s",
-						attribute.getName(), attribute.getValue()));
-				checkWhetherProductExists(attribute);
-			}
-
-			if (rollback) {
-				productEditor.abort();
-				break;
-			}
-			else {
-				createProduct(dbContext, record);
-			}
+			createProduct(dbContext, record);
 
 			// for testing purposes
 			// productEditor.abort();
-			// commit
 			productEditor.commit();
-			Product objectId = productEditor.objectId();
-			String swd = objectId.getSwd();
-			String idno = objectId.getIdno();
+			final Product objectId = productEditor.objectId();
+			final String swd = objectId.getSwd();
+			final String idno = objectId.getIdno();
 			logger.debug(String.format("Product %s - %s was created", swd, idno));
 		}
 	}
 
 	private void displayRecordSetAttributes(Element rootElement) {
-		List<Attribute> attributes =
-				rootElement.getChild("recordSet").getAttributes();
-		for (Attribute attribute : attributes) {
-			logger.debug(String.format("Attributes: %s -> %s", attribute.getName(),
-					attribute.getValue()));
+		final List<Attribute> attributes = rootElement.getChild("recordSet").getAttributes();
+		for (final Attribute attribute : attributes) {
+			logger.debug(String.format("Attributes: %s -> %s", attribute.getName(), attribute.getValue()));
 		}
 	}
 
@@ -172,38 +154,25 @@ public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAc
 		return rootElement.getName().equals("abasData");
 	}
 
-	private void roolbackIfNecessary(Transaction transaction) throws IOException {
-		if (rollback) {
-			transaction.rollback();
-			logger.info("rollback");
-		}
-		else {
-			transaction.commit();
-			logger.info("commit");
-		}
-	}
-
-	private void writeProductHeaderFields(DbContext dbContext, Element recordChild)
-			throws IOException {
+	private void writeProductHeaderFields(DbContext dbContext, Element recordChild) throws IOException {
 		logger.debug("writing header");
-		List<Element> fields = recordChild.getChildren();
-		for (Element field : fields) {
-			String name = field.getAttributeValue("name");
-			String value = field.getValue();
+		final List<Element> fields = recordChild.getChildren();
+		for (final Element field : fields) {
+			final String name = field.getAttributeValue("name");
+			final String value = field.getValue();
 			logger.debug(String.format("header field: %s -> %s", name, value));
 			productEditor.setString(name, value);
 		}
 	}
 
-	private void writeProductRowFields(DbContext dbContext, Element recordChild)
-			throws IOException {
+	private void writeProductRowFields(DbContext dbContext, Element recordChild) throws IOException {
 		logger.debug("writing row");
-		List<Element> fields = recordChild.getChildren();
+		final List<Element> fields = recordChild.getChildren();
 
-		Row appendRow = productEditor.table().appendRow();
-		for (Element field : fields) {
-			String name = field.getAttributeValue("name");
-			String value = field.getValue();
+		final Row appendRow = productEditor.table().appendRow();
+		for (final Element field : fields) {
+			final String name = field.getAttributeValue("name");
+			final String value = field.getValue();
 			logger.debug(String.format("row field: %s -> %s", name, value));
 			appendRow.setString(name, value);
 		}

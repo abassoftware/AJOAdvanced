@@ -27,10 +27,10 @@ public class CreateNewProductsFromXMLTransaction extends AbstractAjoAccess {
 
 	private BufferedWriter bufferedWriter = null;
 	private DbContext dbContext = null;
-	private boolean rollback = true;
 
 	private String message = "Ok";
 	private Transaction transaction = null;
+	ProductEditor productEditor = null;
 
 	@Override
 	public int run(String[] args) {
@@ -44,7 +44,7 @@ public class CreateNewProductsFromXMLTransaction extends AbstractAjoAccess {
 			logFile = args[2];
 		}
 
-		SAXBuilder saxBuilder = new SAXBuilder();
+		final SAXBuilder saxBuilder = new SAXBuilder();
 		Document document = null;
 
 		try {
@@ -52,98 +52,79 @@ public class CreateNewProductsFromXMLTransaction extends AbstractAjoAccess {
 			document = saxBuilder.build(xmlFile);
 
 			// get root element
-			Element rootElement = document.getRootElement();
+			final Element rootElement = document.getRootElement();
 
 			// checks whether XML file is valid abas XML
 			if (rootElement.getName().equals("abasData")) {
-				rollback = false;
 				// get recordSet
-				Element recordSet = rootElement.getChild("recordSet");
+				final Element recordSet = rootElement.getChild("recordSet");
 
 				// get all records
-				List<Element> records = recordSet.getChildren();
+				final List<Element> records = recordSet.getChildren();
 
 				// initializes transaction
 				transaction = dbContext.getTransaction();
 				transaction.begin();
 
-				ProductEditor productEditor = null;
 				// iterate all records
-				for (Element record : records) {
-					String swd = record.getAttribute("swd").getValue();
+				for (final Element record : records) {
+					final String swd = record.getAttribute("swd").getValue();
 					dbContext.out().println("search word: " + swd);
+
+					if ((QueryUtil.getFirst(dbContext,
+							SelectionBuilder.create(Product.class).add(Conditions.eq(Product.META.swd, swd))
+									.build())) != null) {
+						transaction.rollback();
+						message = "Product " + swd + " does already exist";
+						bufferedWriter.write(message);
+						bufferedWriter.newLine();
+						throw new Exception("Product with swd " + swd + " already exists.");
+					}
 
 					// create objects
 					productEditor = dbContext.newObject(ProductEditor.class);
 
-					SelectionBuilder<Product> selectionBuilder =
-							SelectionBuilder.create(Product.class);
-					selectionBuilder.add(Conditions.eq(Product.META.swd, swd));
-
-					if ((QueryUtil.getFirst(dbContext, selectionBuilder.build())) == null) {
-						dbContext.out().println(
-								"Product " + swd + " does not yet exist");
-						rollback = false;
-						// gets all elements in next level
-						List<Element> recordChildren = record.getChildren();
-						for (Element recordChild : recordChildren) {
-							if (recordChild.getName().equals("header")) {
-								List<Element> headerFields =
-										recordChild.getChildren();
-								for (Element headerField : headerFields) {
-									String name =
-											headerField.getAttributeValue("name");
-									String value = headerField.getValue();
-									productEditor.setString(name, value);
-									dbContext.out().println(name + " - " + value);
-								}
+					dbContext.out().println("Product " + swd + " does not yet exist");
+					// gets all elements in next level
+					final List<Element> recordChildren = record.getChildren();
+					for (final Element recordChild : recordChildren) {
+						if (recordChild.getName().equals("header")) {
+							final List<Element> headerFields = recordChild.getChildren();
+							for (final Element headerField : headerFields) {
+								final String name = headerField.getAttributeValue("name");
+								final String value = headerField.getValue();
+								productEditor.setString(name, value);
+								dbContext.out().println(name + " - " + value);
 							}
-							else if (recordChild.getName().equals("row")) {
-								Row appendRow = productEditor.table().appendRow();
-								List<Element> rowFields = recordChild.getChildren();
-								for (Element rowField : rowFields) {
-									String name = rowField.getAttributeValue("name");
-									String value = rowField.getValue();
-									appendRow.setString(name, value);
-									dbContext.out().println(name + " - " + value);
-								}
+						} else if (recordChild.getName().equals("row")) {
+							final Row appendRow = productEditor.table().appendRow();
+							final List<Element> rowFields = recordChild.getChildren();
+							for (final Element rowField : rowFields) {
+								final String name = rowField.getAttributeValue("name");
+								final String value = rowField.getValue();
+								appendRow.setString(name, value);
+								dbContext.out().println(name + " - " + value);
 							}
 						}
-						// For testing purposes
-						// productEditor.abort();
-						productEditor.commit();
-						Product product = productEditor.objectId();
-						message = product.getIdno() + " -> " + product.getSwd();
-						dbContext.out().println("message: " + message);
-						bufferedWriter.write(message);
-						bufferedWriter.newLine();
+					}
+					// For testing purposes
+					// productEditor.abort();
+					productEditor.commit();
+					final Product product = productEditor.objectId();
+					message = product.getIdno() + " -> " + product.getSwd();
+					dbContext.out().println("message: " + message);
+					bufferedWriter.write(message);
+					bufferedWriter.newLine();
 
-					}
-					else {
-						productEditor.abort();
-						rollback = true;
-						message = "Product " + swd + " does already exist";
-						dbContext.out().println("message: " + message);
-						bufferedWriter.write(message);
-						bufferedWriter.newLine();
-						break;
-					}
 				}
 
-				if (rollback == true) {
-					message = message + " -> rollback";
-					transaction.rollback();
-				}
-				else {
-					message = message + " -> commit";
-					transaction.commit();
-				}
+				message = message + " -> commit";
+				transaction.commit();
 				dbContext.out().println("message: " + message);
 				bufferedWriter.write(message);
 				bufferedWriter.newLine();
 
-			}
-			else {
+			} else {
 				message = "No valid abas xml";
 				bufferedWriter.write(message);
 				bufferedWriter.newLine();
@@ -154,14 +135,21 @@ public class CreateNewProductsFromXMLTransaction extends AbstractAjoAccess {
 			bufferedWriter.newLine();
 			dbContext.out().println(message);
 			bufferedWriter.close();
-		}
-		catch (JDOMException e) {
+		} catch (final JDOMException e) {
 			dbContext.out().println(e.getMessage());
 			return 1;
-		}
-		catch (IOException e) {
+		} catch (final IOException e) {
 			dbContext.out().println(e.getMessage());
 			return 1;
+		} catch (final Exception e) {
+			dbContext.out().println(e.getMessage());
+			return 1;
+		} finally {
+			if (productEditor != null) {
+				if (productEditor.active()) {
+					productEditor.abort();
+				}
+			}
 		}
 		return 0;
 	}
