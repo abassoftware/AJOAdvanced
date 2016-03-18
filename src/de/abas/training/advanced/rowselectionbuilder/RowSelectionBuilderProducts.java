@@ -1,7 +1,6 @@
 package de.abas.training.advanced.rowselectionbuilder;
 
 import de.abas.erp.db.RowQuery;
-import de.abas.erp.db.SelectableObject;
 import de.abas.erp.db.schema.part.Product;
 import de.abas.erp.db.schema.part.Product.Row;
 import de.abas.erp.db.selection.Conditions;
@@ -24,7 +23,8 @@ public class RowSelectionBuilderProducts extends AbstractAjoAccess {
 
 	@Override
 	public int run(String[] args) {
-		RowSelectionBuilder<Product, Row> rowSelectionBuilder = RowSelectionBuilder.create(Product.class, Row.class);
+		final RowSelectionBuilder<Product, Row> rowSelectionBuilder = RowSelectionBuilder.create(Product.class,
+				Row.class);
 
 		// row selection criteria
 		// Caution: The method getSelectedProduct can also return null
@@ -33,12 +33,13 @@ public class RowSelectionBuilderProducts extends AbstractAjoAccess {
 		// head selection criteria
 		rowSelectionBuilder.addForHead(Conditions.between(Product.META.idno, "10001", "10010"));
 
-		RowQuery<Product, Row> rowQueryProduct = getDbContext().createQuery(rowSelectionBuilder.build());
+		final RowQuery<Product, Row> rowQueryProduct = getDbContext().createQuery(rowSelectionBuilder.build());
 
 		// displays query result
-		for (Row row : rowQueryProduct) {
+		for (final Row row : rowQueryProduct) {
 			getDbContext().out().println(row.header().getIdno() + " - " + row.header().getSwd());
-			getDbContext().out().println("--" + row.getProductListElem().getIdno() + " -- " + row.getProductListElem().getSwd());
+			getDbContext().out()
+					.println("--" + row.getProductListElem().getIdno() + " -- " + row.getProductListElem().getSwd());
 		}
 
 		return 0;
@@ -51,10 +52,10 @@ public class RowSelectionBuilderProducts extends AbstractAjoAccess {
 	 * @param swd The search word.
 	 * @return Returns the product as instance of SelectableObject.
 	 */
-	private SelectableObject getSelectedProduct(String swd) {
-		SelectionBuilder<Product> selectionBuilder = SelectionBuilder.create(Product.class);
+	private Product getSelectedProduct(String swd) {
+		final SelectionBuilder<Product> selectionBuilder = SelectionBuilder.create(Product.class);
 		selectionBuilder.add(Conditions.eq(Product.META.swd, swd));
-		Product product = QueryUtil.getFirst(getDbContext(), selectionBuilder.build());
+		final Product product = QueryUtil.getFirst(getDbContext(), selectionBuilder.build());
 		return product;
 	}
 
