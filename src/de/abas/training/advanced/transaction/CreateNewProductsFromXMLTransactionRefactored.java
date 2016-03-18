@@ -4,16 +4,15 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
 import de.abas.erp.db.DbContext;
+import de.abas.erp.db.FieldValueSetter;
 import de.abas.erp.db.Transaction;
 import de.abas.erp.db.schema.part.Product;
 import de.abas.erp.db.schema.part.ProductEditor;
-import de.abas.erp.db.schema.part.ProductEditor.Row;
 import de.abas.erp.db.selection.Conditions;
 import de.abas.erp.db.selection.SelectionBuilder;
 import de.abas.erp.db.util.QueryUtil;
@@ -33,39 +32,28 @@ public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAc
 
 	private String xmlFile = "files/products.xml";
 	private final DbContext dbContext = getDbContext();
+	private Element rootElement;
 	private Transaction transaction;
 
 	private ProductEditor productEditor;
 
 	@Override
 	public int run(String[] arg1) {
-
-		// adding jdom-2-0-5.jar to build path and enter in mandant.classpath
-
 		initXmlFileName(arg1);
 
 		try {
-			final Element rootElement = new SAXBuilder().build(xmlFile).getRootElement();
+			processXmlFile();
 			if (isValidXml(rootElement)) {
-				displayRootElementName(rootElement);
-				displayRecordSetAttributes(rootElement);
-
 				beginTransaction();
-
-				createProductsIfNotExisting(rootElement);
+				createProducts(rootElement);
+				commitTransaction();
 
 			} else {
 				logger.warn("is not valid xml formatting");
 			}
 			logger.info("end of program");
-		} catch (final IOException e) {
-			logger.fatal(e.getMessage(), e);
-			return 1;
-		} catch (final JDOMException e) {
-			logger.fatal(e.getMessage(), e);
-			return 1;
 		} catch (final Exception e) {
-			logger.warn(e.getMessage(), e);
+			logger.error(e.getMessage(), e);
 		} finally {
 			closeProductEditor();
 		}
@@ -73,22 +61,17 @@ public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAc
 	}
 
 	private void beginTransaction() {
+		logger.debug("Transaction begin");
 		transaction = dbContext.getTransaction();
 		transaction.begin();
 	}
 
-	private void checkForRollback(Attribute attribute) throws Exception, IOException {
-		if (attribute.getName().equals("swd")) {
-			final SelectionBuilder<Product> selectionBuilder = SelectionBuilder.create(Product.class);
-			selectionBuilder.add(Conditions.eq(Product.META.swd, attribute.getValue()));
-			final Product first = QueryUtil.getFirst(dbContext, selectionBuilder.build());
-
-			if (first != null) {
-				final String message = String.format("Object swd: %s already exiting", attribute.getValue());
-				logger.error(message);
-				transaction.rollback();
-				throw new Exception(message);
-			}
+	private void checkForRollback(String swd) throws Exception {
+		if (QueryUtil.getFirst(dbContext,
+				SelectionBuilder.create(Product.class).add(Conditions.eq(Product.META.swd, swd)).build()) != null) {
+			logger.debug("Transaction rollback");
+			transaction.rollback();
+			throw new Exception(String.format("Object swd: %s already exits", swd));
 		}
 	}
 
@@ -100,48 +83,38 @@ public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAc
 		}
 	}
 
-	private void createProduct(DbContext dbContext, Element record) throws IOException {
+	private void commitTransaction() {
+		logger.debug("Transaction commit");
+		transaction.commit();
+	}
+
+	private void createProduct(Element record) {
 		final List<Element> recordChildren = record.getChildren();
 		for (final Element recordChild : recordChildren) {
 			if (recordChild.getName().equals("header")) {
-				writeProductHeaderFields(dbContext, recordChild);
+				logger.debug("writing header fields");
+				writeProductFields(recordChild, productEditor);
 			} else if (recordChild.getName().equals("row")) {
-				writeProductRowFields(dbContext, recordChild);
+				logger.debug("writing row fields");
+				writeProductFields(recordChild, productEditor.table().appendRow());
 			}
 		}
 	}
 
-	private void createProductsIfNotExisting(Element rootElement) throws Exception, IOException {
+	private void createProducts(Element rootElement) throws Exception {
 		for (final Element record : rootElement.getChild("recordSet").getChildren()) {
-			final List<Attribute> recordAttributes = record.getAttributes();
-
-			for (final Attribute attribute : recordAttributes) {
-				logger.debug(String.format("Attributes: %s -> %s", attribute.getName(), attribute.getValue()));
-				checkForRollback(attribute);
-			}
+			checkForRollback(record.getAttributeValue("swd"));
 
 			productEditor = dbContext.newObject(ProductEditor.class);
-			createProduct(dbContext, record);
-
+			createProduct(record);
 			// for testing purposes
 			// productEditor.abort();
 			productEditor.commit();
-			final Product objectId = productEditor.objectId();
-			final String swd = objectId.getSwd();
-			final String idno = objectId.getIdno();
-			logger.debug(String.format("Product %s - %s was created", swd, idno));
-		}
-	}
 
-	private void displayRecordSetAttributes(Element rootElement) {
-		final List<Attribute> attributes = rootElement.getChild("recordSet").getAttributes();
-		for (final Attribute attribute : attributes) {
-			logger.debug(String.format("Attributes: %s -> %s", attribute.getName(), attribute.getValue()));
+			final String swd = productEditor.objectId().getSwd();
+			final String idno = productEditor.objectId().getIdno();
+			logger.debug(String.format("Product %s - %s created", swd, idno));
 		}
-	}
-
-	private void displayRootElementName(Element rootElement) {
-		logger.debug(String.format("rootElement: %s", rootElement.getName()));
 	}
 
 	private void initXmlFileName(String[] arg1) {
@@ -154,27 +127,18 @@ public class CreateNewProductsFromXMLTransactionRefactored extends AbstractAjoAc
 		return rootElement.getName().equals("abasData");
 	}
 
-	private void writeProductHeaderFields(DbContext dbContext, Element recordChild) throws IOException {
-		logger.debug("writing header");
+	private void processXmlFile() throws JDOMException, IOException {
+		rootElement = new SAXBuilder().build(xmlFile).getRootElement();
+	}
+
+	private void writeProductFields(Element recordChild, FieldValueSetter fieldValueSetter) {
 		final List<Element> fields = recordChild.getChildren();
 		for (final Element field : fields) {
 			final String name = field.getAttributeValue("name");
 			final String value = field.getValue();
-			logger.debug(String.format("header field: %s -> %s", name, value));
-			productEditor.setString(name, value);
+			logger.debug(String.format("field: %s -> %s", name, value));
+			fieldValueSetter.setString(name, value);
 		}
 	}
 
-	private void writeProductRowFields(DbContext dbContext, Element recordChild) throws IOException {
-		logger.debug("writing row");
-		final List<Element> fields = recordChild.getChildren();
-
-		final Row appendRow = productEditor.table().appendRow();
-		for (final Element field : fields) {
-			final String name = field.getAttributeValue("name");
-			final String value = field.getValue();
-			logger.debug(String.format("row field: %s -> %s", name, value));
-			appendRow.setString(name, value);
-		}
-	}
 }
