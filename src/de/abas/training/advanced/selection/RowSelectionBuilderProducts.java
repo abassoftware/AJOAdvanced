@@ -1,4 +1,4 @@
-package de.abas.training.advanced.rowselectionbuilder;
+package de.abas.training.advanced.selection;
 
 import de.abas.erp.db.RowQuery;
 import de.abas.erp.db.schema.part.Product;

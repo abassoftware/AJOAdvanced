@@ -19,6 +19,7 @@ import de.abas.erp.db.schema.part.ProductEditor;
 import de.abas.erp.db.selection.Conditions;
 import de.abas.erp.db.selection.RowSelectionBuilder;
 import de.abas.erp.db.util.QueryUtil;
+import de.abas.training.advanced.selection.RowSelectionBuilderProducts;
 import de.abas.training.advanced.testutility.TestLogger;
 import de.abas.training.advanced.testutility.Utility;
 

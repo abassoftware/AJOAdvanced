@@ -1,14 +1,15 @@
 package de.abas.training.advanced.languageindependency;
 
+import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import de.abas.eks.jfop.FOPException;
 import de.abas.eks.jfop.remote.ContextRunnable;
-import de.abas.eks.jfop.remote.EKS;
-import de.abas.eks.jfop.remote.FO;
 import de.abas.eks.jfop.remote.FOPSessionContext;
+import de.abas.erp.api.gui.InputBox;
 import de.abas.erp.api.gui.TextBox;
+import de.abas.erp.db.DbContext;
 
 /**
  * This class shows how to use language independent texts. The translation of
@@ -22,16 +23,21 @@ import de.abas.erp.api.gui.TextBox;
  */
 public class LanguageDependentTexts implements ContextRunnable {
 
+	FOPSessionContext fopSessionContext;
+
 	@Override
-	public int runFop(FOPSessionContext ctx, String[] args) throws FOPException {
+	public int runFop(FOPSessionContext fopSessionContext, String[] args) throws FOPException {
+		this.fopSessionContext = fopSessionContext;
+		final DbContext ctx = fopSessionContext.getDbContext();
+
 		// TextBox with simple text
-		new TextBox(ctx.getDbContext(), getTextInOperatingLanguage("LanguageDependentTexts.1"),
-				getTextInOperatingLanguage("LanguageDependentTexts.2")).show();
+		new TextBox(ctx, getTranslatedText("LanguageDependentTexts.1"), getTranslatedText("LanguageDependentTexts.2"))
+				.show();
 
 		// TextBox containing variable text
-		final String param = FO.lesen(new String[] { getTextInOperatingLanguage("LanguageDependentTexts.4") });
-		new TextBox(ctx.getDbContext(), getTextInOperatingLanguage("LanguageDependentTexts.1"),
-				getTextInOperatingLanguage("LanguageDependentTexts.3", param)).show();
+		final String param = new InputBox(ctx, getTranslatedText("LanguageDependentTexts.4")).read();
+		new TextBox(ctx, getTranslatedText("LanguageDependentTexts.1"),
+				getTranslatedText("LanguageDependentTexts.3", param)).show();
 
 		return 0;
 	}
@@ -44,17 +50,15 @@ public class LanguageDependentTexts implements ContextRunnable {
 	 * @param params Strings containing parameters needed for bundle text.
 	 * @return Returns text in current operating language.
 	 */
-	protected String getTextInOperatingLanguage(String key, Object... params) {
+	protected String getTranslatedText(String key, Object... params) {
 		// gets current operating language
-		final Locale operatingLangLocale = EKS.getFOPSessionContext().getOperatingLangLocale();
+		final Locale locale = fopSessionContext.getOperatingLangLocale();
 		// gets text specified by key from ControlFOPCopySystem.properties in
 		// previously specified operating language
-		final String bundle = ResourceBundle.getBundle(LanguageDependentTexts.class.getName(),
-				operatingLangLocale,
-				LanguageDependentTexts.class.getClassLoader()).getString(key);
-		// fills replacement characters (%s) with the according parameters from
-		// params
-		return String.format(bundle, params);
+		final String bundle = ResourceBundle
+				.getBundle(LanguageDependentTexts.class.getPackage().getName() + ".messages", locale).getString(key);
+		// fills replacement characters {number} with the according parameters
+		return MessageFormat.format(bundle, params);
 	}
 
 }
