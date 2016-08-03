@@ -1,0 +1,24 @@
+..!interpreter english declaration noabbrev englvar
+
+..============================================================================
+..  Author             : jasc
+..  Date of Creation   : 13.05.2016
+..  Name               : ASSIGN.VALUE.FO2
+..  Path/Pfad          : ow1/ASSIGN.VALUE.FO2
+..
+..============================================================================
+..<VAR folded>
+.var text xtread
+.var R7.2 xrvalue
+..</VAR>
+
+def main() {
+    .call enableDebug()
+    do {
+        .read "Please enter valid R7.2 floating point number:" U|xtread
+        .assign U|xrvalue = U|xtread
+    } while (G|success = G|false)
+}
+def enableDebug() {
+    .set debug + 
+}  

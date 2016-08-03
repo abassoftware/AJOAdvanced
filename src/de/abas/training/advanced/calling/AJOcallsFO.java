@@ -16,37 +16,14 @@ public class AJOcallsFO extends AbstractAjoAccess {
 
 	@Override
 	public int run(String[] args) {
-		DbContext ctx = getDbContext();
+		final DbContext ctx = getDbContext();
 
-		// ..!interpreter english translate noabbrev
-		// ..*****************************************************************************
-		// .. FOP-Name : FOP.ASSIGN.VALUE
-		// .. Date : Oct 20, 2014
-		// .. Author : abas Software AG
-		// .. Responsible :
-		// .. Supervisor :
-		// .. Copyright : (c) 2014
-		// .. Function :
-		// ..*****************************************************************************
-		// ..
-		// .type text xtread
-		// .type R7.2 xrvalue
-		// ..
-		// .set debug +
-		// !INPUT
-		// .read "Please enter valid R7.2 floating point number:" U|xtread
-		// .assign U|xrvalue = U|xtread
-		// .continue END ? G|mehr = G|true
-		// .continue INPUT
-		// ..
-		// !END
-		// .continue
-		FOe.input("ow1/FOP.ASSIGN.VALUE");
+		// find FO file in files/ASSIGN.VALUE.FO2
+		FOe.input("ow1/ASSIGN.VALUE.FO");
 
-		UserTextBuffer userTextBuffer =
-				BufferFactory.newInstance(true).getUserTextBuffer();
+		final UserTextBuffer userTextBuffer = BufferFactory.newInstance(true).getUserTextBuffer();
 		if (userTextBuffer.isVarDefined("xrvalue")) {
-			double value = userTextBuffer.getDoubleValue("xrvalue");
+			final double value = userTextBuffer.getDoubleValue("xrvalue");
 			ctx.out().println("R7.2: " + value);
 			return 0;
 		}

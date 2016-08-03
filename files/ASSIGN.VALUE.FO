@@ -1,0 +1,41 @@
+..!interpreter english declaration noabbrev englvar
+..!fo2compiler version: 2.0.3, generated: Wed Aug 03 14:14:49 CEST 2016
+.type INT xprocsp  ?      _F|defined(U|xprocsp)
+..============================================================================
+..  Author             : jasc
+..  Date of Creation   : 13.05.2016
+..  Name               : ASSIGN.VALUE.FO2
+..  Path/Pfad          : ow1/ASSIGN.VALUE.FO2
+..
+..============================================================================
+..<VAR folded>
+..!line ASSIGN.VALUE.FO2:11:1:"VAR"
+.type text xtread ? _F|defined(U|xtread)
+..!line ASSIGN.VALUE.FO2:12:1:"VAR"
+.type R7.2 xrvalue ? _F|defined(U|xrvalue)
+..</VAR>
+.continue MAIN
+!MAIN
+!PR00000: main
+..!line ASSIGN.VALUE.FO2:15:0:"main"
+..!line ASSIGN.VALUE.FO2:16:3:"CALL enableDebug"
+.formula U|xprocsp = U|xprocsp + 1
+.type text U|xprocst.U|xprocsp          ? _F|defined(U|xprocst.U|xprocsp)
+.formula U|xprocst.U|xprocsp = "PC00000"
+.continue PR00001
+!PC00000: PROCEDURE RETURN 
+..!line ASSIGN.VALUE.FO2:16:1:"PROCEDURE RETURN"
+.formula U|xprocsp = U|xprocsp - 1
+!RP00000: REPEAT
+..!line ASSIGN.VALUE.FO2:17:0:"REPEAT"
+.read "Please enter valid R7.2 floating point number:" U|xtread
+.assign U|xrvalue = U|xtread
+.continue RP00000 ?(G|success = G|false)
+!RE00000: END REPEAT
+..!line ASSIGN.VALUE.FO2:20:1:"END REPEAT"
+.continue END
+!PR00001: enableDebug
+..!line ASSIGN.VALUE.FO2:22:0:"enableDebug"
+.set debug +
+.continue 'U|xprocst.U|xprocsp'
+!END

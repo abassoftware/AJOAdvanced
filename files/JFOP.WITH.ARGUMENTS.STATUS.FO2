@@ -1,0 +1,31 @@
+..!interpreter english declaration noabbrev englvar
+
+..============================================================================
+..  Author             : jasc
+..  Date of Creation   : 13.05.2016
+..  Name               : JFOP.WITH.ARGUMENTS.STATUS.FO2
+..  Path/Pfad          : ow1/JFOP.WITH.ARGUMENTS.STATUS.FO2
+..
+..============================================================================
+..<VAR folded>
+.var text xtmessage
+.var text xtinput
+..</VAR>
+
+def main(){
+    .call enableDebug()
+    .formula U|xtmessage = "Okay"
+    .read "Please enter alphabetical letters and numbers only" U|xtinput
+    .input "de.abas.training.basic.calling.FOcallsAJO.class"
+    .call displayMessage()
+}
+
+def enableDebug() {
+    .set debug + 
+} 
+
+def displayMessage(){
+        .box Message
+        .item 'U|xtmessage'
+        .endItem
+}

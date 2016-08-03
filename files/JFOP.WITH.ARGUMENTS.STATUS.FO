@@ -1,0 +1,51 @@
+..!interpreter english declaration noabbrev englvar
+..!fo2compiler version: 2.0.3, generated: Wed Aug 03 14:14:49 CEST 2016
+.type INT xprocsp  ?      _F|defined(U|xprocsp)
+..============================================================================
+..  Author             : jasc
+..  Date of Creation   : 13.05.2016
+..  Name               : JFOP.WITH.ARGUMENTS.STATUS.FO2
+..  Path/Pfad          : ow1/JFOP.WITH.ARGUMENTS.STATUS.FO2
+..
+..============================================================================
+..<VAR folded>
+..!line JFOP.WITH.ARGUMENTS.STATUS.FO2:11:1:"VAR"
+.type text xtmessage ? _F|defined(U|xtmessage)
+..!line JFOP.WITH.ARGUMENTS.STATUS.FO2:12:1:"VAR"
+.type text xtinput ? _F|defined(U|xtinput)
+..</VAR>
+.continue MAIN
+!MAIN
+!PR00000: main
+..!line JFOP.WITH.ARGUMENTS.STATUS.FO2:15:0:"main"
+..!line JFOP.WITH.ARGUMENTS.STATUS.FO2:16:3:"CALL enableDebug"
+.formula U|xprocsp = U|xprocsp + 1
+.type text U|xprocst.U|xprocsp          ? _F|defined(U|xprocst.U|xprocsp)
+.formula U|xprocst.U|xprocsp = "PC00000"
+.continue PR00001
+!PC00000: PROCEDURE RETURN 
+..!line JFOP.WITH.ARGUMENTS.STATUS.FO2:16:1:"PROCEDURE RETURN"
+.formula U|xprocsp = U|xprocsp - 1
+.formula U|xtmessage = "Okay"
+.read "Please enter alphabetical letters and numbers only" U|xtinput
+.input "de.abas.training.basic.calling.FOcallsAJO.class"
+..!line JFOP.WITH.ARGUMENTS.STATUS.FO2:20:3:"CALL displayMessage"
+.formula U|xprocsp = U|xprocsp + 1
+.type text U|xprocst.U|xprocsp          ? _F|defined(U|xprocst.U|xprocsp)
+.formula U|xprocst.U|xprocsp = "PC00001"
+.continue PR00002
+!PC00001: PROCEDURE RETURN 
+..!line JFOP.WITH.ARGUMENTS.STATUS.FO2:20:1:"PROCEDURE RETURN"
+.formula U|xprocsp = U|xprocsp - 1
+.continue END
+!PR00001: enableDebug
+..!line JFOP.WITH.ARGUMENTS.STATUS.FO2:23:0:"enableDebug"
+.set debug +
+.continue 'U|xprocst.U|xprocsp'
+!PR00002: displayMessage
+..!line JFOP.WITH.ARGUMENTS.STATUS.FO2:27:0:"displayMessage"
+.box Message
+'U|xtmessage'
+..
+.continue 'U|xprocst.U|xprocsp'
+!END
