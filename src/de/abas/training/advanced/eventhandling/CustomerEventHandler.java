@@ -1,7 +1,5 @@
 package de.abas.training.advanced.eventhandling;
 
-import de.abas.eks.jfop.remote.FO;
-import de.abas.erp.api.gui.TextBox;
 import de.abas.erp.axi.event.EventException;
 import de.abas.erp.axi.screen.ScreenControl;
 import de.abas.erp.axi2.EventHandlerRunner;
@@ -27,8 +25,10 @@ import de.abas.erp.jfop.rt.api.annotation.RunFopWith;
 public class CustomerEventHandler {
 
 	/**
-	 * When the customer screen is entered, a input window with custom input message is shown. After inserting some text the input is displayed in a
-	 * TextBox and it is determined whether the input was OK or Error. This class is supposed to show the usage of the EventException.
+	 * When the customer screen is entered, a input window with custom input
+	 * message is shown. After inserting some text the input is displayed in a
+	 * TextBox and it is determined whether the input was OK or Error. This
+	 * class is supposed to show the usage of the EventException.
 	 *
 	 * @param event The event that occurred.
 	 * @param screenControl The ScreenControl instance.
@@ -37,36 +37,9 @@ public class CustomerEventHandler {
 	 * @throws EventException The exception thrown if an error occurs.
 	 */
 	@ScreenEventHandler(type = ScreenEventType.ENTER)
-	public void screenEnter(ScreenEvent event, ScreenControl screenControl, DbContext ctx, CustomerEditor head) throws EventException {
-		// creates input window with custom input message
-		String[] customInputMessage = new String[1];
-		customInputMessage[0] = "Input (Error/OK)";
-		String lesen = FO.lesen(customInputMessage);
+	public void screenEnter(ScreenEvent event, ScreenControl screenControl, DbContext ctx, CustomerEditor head)
+			throws EventException {
 
-		// displays TextBox with input
-		TextBox textBox = new TextBox(ctx, "Input was: ", lesen);
-		textBox.show();
-
-		if (!lesen.equals("Error")) {
-			// shows TextBox with abas error message
-			// throw new EventException(0);
-
-			// does not show TextBox
-			// throw new EventException("", 0);
-
-			// shows TextBox with custom error message
-			throw new EventException("All is well!", 0);
-		}
-		else {
-			// shows TextBox with abas error message
-			// throw new EventException(1);
-
-			// does not show TextBox
-			// throw new EventException("", 1);
-
-			// shows TextBox with custom error message
-			throw new EventException("Problems", 1);
-		}
 	}
 
 }

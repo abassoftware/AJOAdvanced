@@ -1,12 +1,5 @@
 package de.abas.training.advanced.selection;
 
-import de.abas.erp.db.RowQuery;
-import de.abas.erp.db.schema.part.Product;
-import de.abas.erp.db.schema.part.Product.Row;
-import de.abas.erp.db.selection.Conditions;
-import de.abas.erp.db.selection.RowSelectionBuilder;
-import de.abas.erp.db.selection.SelectionBuilder;
-import de.abas.erp.db.util.QueryUtil;
 import de.abas.training.advanced.common.AbstractAjoAccess;
 
 /**
@@ -23,40 +16,8 @@ public class RowSelectionBuilderProducts extends AbstractAjoAccess {
 
 	@Override
 	public int run(String[] args) {
-		final RowSelectionBuilder<Product, Row> rowSelectionBuilder = RowSelectionBuilder.create(Product.class,
-				Row.class);
-
-		// row selection criteria
-		// Caution: The method getSelectedProduct can also return null
-		rowSelectionBuilder.add(Conditions.eq(Row.META.productListElem, getSelectedProduct("NN10021")));
-
-		// head selection criteria
-		rowSelectionBuilder.addForHead(Conditions.between(Product.META.idno, "10001", "10010"));
-
-		final RowQuery<Product, Row> rowQueryProduct = getDbContext().createQuery(rowSelectionBuilder.build());
-
-		// displays query result
-		for (final Row row : rowQueryProduct) {
-			getDbContext().out().println(row.header().getIdno() + " - " + row.header().getSwd());
-			getDbContext().out()
-					.println("--" + row.getProductListElem().getIdno() + " -- " + row.getProductListElem().getSwd());
-		}
 
 		return 0;
-
-	}
-
-	/**
-	 * Selects first product with the specified search word.
-	 *
-	 * @param swd The search word.
-	 * @return Returns the product as instance of SelectableObject.
-	 */
-	private Product getSelectedProduct(String swd) {
-		final SelectionBuilder<Product> selectionBuilder = SelectionBuilder.create(Product.class);
-		selectionBuilder.add(Conditions.eq(Product.META.swd, swd));
-		final Product product = QueryUtil.getFirst(getDbContext(), selectionBuilder.build());
-		return product;
 	}
 
 }
