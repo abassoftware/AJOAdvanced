@@ -1,0 +1,48 @@
+database Inventory {
+	number 25
+	classname InventoryCounter
+	structure InventoryCounter {
+		head {
+			field I6 yteam {
+				label ""
+				heading ""
+				description Team
+				screen EDITABLE
+				showPriority A
+				changePriority A
+			}
+			field "P2:1" yproduct {
+				label ""
+				heading ""
+				description Product
+				screen EDITABLE
+				showPriority A
+				changePriority A
+			}
+			field R7.2 yqty {
+				label ""
+				heading ""
+				description Quantity
+				screen EDITABLE
+				showPriority A
+				changePriority A
+			}
+			field TAZ1 ywarehouseunit {
+				label ""
+				heading ""
+				description "Warehouse Unit"
+				screen EDITABLE
+				showPriority A
+				changePriority A
+			}
+			field GD19 ydate {
+				label ""
+				heading ""
+				description Date
+				screen EDITABLE
+				showPriority A
+				changePriority A
+			}
+		}
+	}
+}

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE frame SYSTEM "urn:x-abas.de:abasscreens-1.00.dtd">
+
+<frame frameType="T">
+ <layout.grid>
+  <metainfo axis="column" grid="0" stretch="zoom" />
+  <metainfo axis="row" grid="0" stretch="zoom" />
+  <cell alignX="fill" alignY="fill" gridX="0" gridY="0">
+   <layout.notebook>
+    <pane.notebook msgId="d95984c6da90849d3f88401c8ff68171.1">
+     <layout.grid>
+      <metainfo axis="column" grid="2" indent="large" />
+      <cell gridX="0" gridY="0">
+       <label msgId="52f5e0bc3859bc5f5e25130b6c7e8881.1" />
+      </cell>
+      <cell alignX="fill" alignY="fill" gridX="1" gridY="0">
+       <erpfield access="readOnly" s3Name="1:titem" />
+      </cell>
+      <cell gridX="2" gridY="0">
+       <label msgId="9ba51734ced032fd8ec25acfb387a23f.1" />
+      </cell>
+      <cell alignX="fill" alignY="fill" gridX="3" gridY="0">
+       <erpfield access="readOnly" s3Name="1:tdate" />
+      </cell>
+      <cell gridX="0" gridY="1">
+       <label msgId="ac848fa228f49ba2b8a5fbd76596817d.1" />
+      </cell>
+      <cell gridX="1" gridY="1">
+       <erpfield access="readOnly" s3Name="1:tteam" />
+      </cell>
+      <cell gridX="2" gridY="1">
+       <label msgId="15f40291299d8c47431c7045a05f9cf8.2" />
+      </cell>
+      <cell alignX="fill" alignY="fill" gridX="3" gridY="1">
+       <erpfield access="readOnly" s3Name="1:tproduct" />
+      </cell>
+      <cell gridX="0" gridY="2">
+       <label msgId="7c856a87e148ff82d5bcfa472c19b006.2" />
+      </cell>
+      <cell gridX="1" gridY="2">
+       <erpfield access="readOnly" s3Name="1:tqty" />
+      </cell>
+      <cell gridX="2" gridY="2">
+       <label msgId="2460032dc7f2f18abb71fe6134d664f7.1" />
+      </cell>
+      <cell alignX="fill" alignY="fill" gridX="3" gridY="2">
+       <erpfield s3Name="1:tcorrqty" />
+      </cell>
+      <cell gridX="0" gridY="3">
+       <label msgId="574cd0682e6bdac50e4c1bb7eaf839e8.2" />
+      </cell>
+      <cell gridX="1" gridY="3">
+       <erpfield access="readOnly" s3Name="1:tunit" />
+      </cell>
+      <cell gridX="2" gridY="3" />
+      <cell gridX="3" gridY="3" />
+      <cell gridX="0" gridY="4">
+       <label msgId="7ecbbc90d69630f332c6f81a985243bc.1" />
+      </cell>
+      <cell gridX="1" gridY="4" sizeX="2">
+       <erpfield access="readOnly" dimY="3" s3Name="1:tarticledescr" />
+      </cell>
+      <cell gridX="3" gridY="4" />
+      <cell gridX="0" gridY="5">
+       <label msgId="281125e7ce130b06d22e9fbb187509bb.1" />
+      </cell>
+      <cell gridX="1" gridY="5">
+       <erpfield access="readOnly" s3Name="1:tpurchprice" />
+      </cell>
+      <cell gridX="2" gridY="5">
+       <label msgId="55da0620dad09becb525cca18f6d0dd8.1" />
+      </cell>
+      <cell gridX="3" gridY="5">
+       <erpfield access="readOnly" s3Name="1:twarehousevalue" />
+      </cell>
+     </layout.grid>
+    </pane.notebook>
+   </layout.notebook>
+  </cell>
+ </layout.grid>
+</frame>
+

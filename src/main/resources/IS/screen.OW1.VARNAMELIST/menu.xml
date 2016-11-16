@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE popups SYSTEM "urn:x-abas.de:abasmenu.dtd">
+
+<popups>
+ <popup id="menuTable" />
+ <popup id="menuExecute" />
+</popups>
+

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE frame SYSTEM "urn:x-abas.de:abasscreens-1.00.dtd">
+
+<frame frameType="M" msgId="916d7d836f9bfc95f1571c2989bc0643">
+ <layout.grid>
+  <metainfo axis="column" grid="0" stretch="zoom" />
+  <cell gridX="0" gridY="0">
+   <layout.notebook>
+    <pane.notebook msgId="38dc6f6a-feeb-4759-bcaf-5fbc1bb627f8">
+     <layout.grid>
+      <metainfo axis="column" grid="0" stretch="zoom" />
+      <cell gridX="0" gridY="0">
+       <label msgId="45e79f05-a2ee-40f5-ba75-cd3adf188e58" />
+      </cell>
+      <cell gridX="1" gridY="0">
+       <erpfield s3Name="0:team" />
+      </cell>
+      <cell gridX="2" gridY="0" />
+      <cell gridX="3" gridY="0" />
+      <cell gridX="0" gridY="1">
+       <label msgId="b7ef86e2-cd01-4557-aaee-e4990abd2366" />
+      </cell>
+      <cell alignX="fill" alignY="fill" gridX="1" gridY="1">
+       <erpfield s3Name="0:product" />
+      </cell>
+      <cell gridX="2" gridY="1">
+       <label msgId="5d25b491-a07a-42a1-a06f-d23441c3a491" />
+      </cell>
+      <cell gridX="3" gridY="1">
+       <erpfield s3Name="0:descr" />
+      </cell>
+      <cell gridX="0" gridY="2">
+       <label msgId="2987cafb-f980-4111-be85-85ac869f813d" />
+      </cell>
+      <cell gridX="1" gridY="2">
+       <erpfield s3Name="0:qty" />
+      </cell>
+      <cell gridX="2" gridY="2">
+       <label msgId="e88f815e-b427-4f59-8007-a386702b35dd" />
+      </cell>
+      <cell gridX="3" gridY="2">
+       <erpfield s3Name="0:unit" />
+      </cell>
+      <cell gridX="0" gridY="3" />
+      <cell gridX="1" gridY="3" />
+      <cell gridX="2" gridY="3" />
+      <cell gridX="3" gridY="3" />
+      <cell gridX="0" gridY="4" />
+      <cell gridX="1" gridY="4" />
+      <cell gridX="2" gridY="4" />
+      <cell gridX="3" gridY="4" />
+      <cell gridX="0" gridY="5" />
+      <cell gridX="1" gridY="5">
+       <erpfield dimX="0" msgId="e40709a4-981f-4a39-a06f-01e53ed32889" s3Name="0:commitqty" />
+      </cell>
+      <cell gridX="2" gridY="5" />
+      <cell gridX="3" gridY="5" />
+     </layout.grid>
+    </pane.notebook>
+    <pane.notebook msgId="2ca19825-a190-49f9-93fb-55121cb0f141">
+     <layout.grid>
+      <metainfo axis="column" grid="0" stretch="zoom" />
+      <metainfo axis="row" grid="3" stretch="zoom" />
+      <cell alignX="fill" alignY="fill" gridX="0" gridY="0">
+       <label msgId="80d51b54-bf3c-4dca-aa64-b059438ad31f" />
+      </cell>
+      <cell gridX="1" gridY="0">
+       <erpfield s3Name="0:teamfrom" />
+      </cell>
+      <cell gridX="2" gridY="0">
+       <label msgId="0bb1d58e-dfeb-4d82-82a0-e20e3096ab84" />
+      </cell>
+      <cell gridX="3" gridY="0">
+       <erpfield s3Name="0:teamto" />
+      </cell>
+      <cell gridX="4" gridY="0" />
+      <cell alignX="fill" alignY="fill" gridX="0" gridY="1">
+       <label msgId="ef7b7e71-4027-4c51-ae86-b3912b428a25" />
+      </cell>
+      <cell gridX="1" gridY="1">
+       <erpfield s3Name="0:datefrom" />
+      </cell>
+      <cell gridX="2" gridY="1">
+       <label msgId="948cd999-50de-4573-9402-f9e4ae9372b8" />
+      </cell>
+      <cell gridX="3" gridY="1">
+       <erpfield s3Name="0:dateto" />
+      </cell>
+      <cell gridX="4" gridY="1">
+       <erpfield dimX="0" msgId="35fae174-0b7d-475c-bf00-d1378bc91384" s3Name="0:showqty" />
+      </cell>
+      <cell gridX="0" gridY="2" sizeX="5">
+       <groupline />
+      </cell>
+      <cell gridX="0" gridY="3" sizeX="5">
+       <layout.grid>
+        <metainfo axis="column" grid="0" stretch="zoom" />
+        <metainfo axis="row" grid="0" stretch="zoom" />
+        <cell alignX="fill" alignY="fill" gridX="0" gridY="0">
+         <table>
+          <erpfield access="readOnly" msgId="inventory_ow1$0" s3Name="1:titem" />
+          <erpfield access="readOnly" msgId="inventory_ow1$1" s3Name="1:tdate" />
+          <erpfield access="readOnly" dimX="0" msgId="86a3f7b2-3f49-46ee-8776-81af60d7deff" s3Name="1:tteam" />
+          <erpfield access="readOnly" msgId="inventory_ow1$2" s3Name="1:tproduct" />
+          <erpfield access="readOnly" msgId="inventory_ow1$3" s3Name="1:tqty" />
+          <erpfield msgId="inventory_ow1$4" s3Name="1:tcorrqty" />
+          <erpfield access="readOnly" msgId="inventory_ow1$5" s3Name="1:tunit" />
+          <erpfield access="readOnly" msgId="inventory_ow1$6" s3Name="1:tarticledescr" />
+          <erpfield access="readOnly" msgId="inventory_ow1$7" s3Name="1:tpurchprice" />
+          <erpfield access="readOnly" msgId="inventory_ow1$8" s3Name="1:twarehousevalue" />
+         </table>
+        </cell>
+       </layout.grid>
+      </cell>
+     </layout.grid>
+    </pane.notebook>
+   </layout.notebook>
+  </cell>
+ </layout.grid>
+</frame>
+
