@@ -30,7 +30,7 @@ eval $(docker-machine env default)
 To use the project's docker-compose.yml file, in the project's root directory run:
 ```shell
 ./initGradleProperties.sh
-docker login --username <extranet.abas.de user> --password <extranet.abas.de password>
+docker login https://nexus3.abas-usa.com:18001 --username <extranet.abas.de user> --password <extranet.abas.de password>
 docker-compose up
 ```
 
